@@ -5,6 +5,7 @@
 import numpy as np, math, os, imageio, shutil, pdb
 import matplotlib.gridspec as gridspec
 import plotly.graph_objs as go, plotly
+import plotly.figure_factory as ff
 import json
 import random as rnd
 import pandas as pd
@@ -427,10 +428,9 @@ class GEMA:
         # MODIFIED. Activation map rotated 90º so it matches with the Heat Map visualisation
         map_rot = np.rot90(self.activations_map)
 
-        trace = go.Heatmap(z=self.reverse_matrix(map_rot))
-        data = [trace]
+        fig = ff.create_annotated_heatmap(map_rot)
 
-        iplot(data, filename=filename)
+        iplot(fig, filename=filename)
 
     # ELEVATION MAP
     def elevation_map(self, filename = 'elevation_map'):
