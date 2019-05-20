@@ -54,6 +54,7 @@ class GEMA:
     neurons_per_num_activations = None
     topological_map = 0
 
+
     ######################################################
     #                    CONSTRUCTOR                     #
     ######################################################
@@ -428,7 +429,7 @@ class GEMA:
         # MODIFIED. Activation map rotated 90º so it matches with the Heat Map visualisation
         map_rot = np.rot90(self.activations_map)
 
-        fig = ff.create_annotated_heatmap(map_rot)
+        fig = ff.create_annotated_heatmap(map_rot, showscale= True)
 
         iplot(fig, filename=filename)
 
