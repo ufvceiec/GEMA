@@ -2,24 +2,29 @@
 #                    LIBRARIES                       #
 ######################################################
 
-import numpy as np, math, os, imageio, shutil, pdb
-import matplotlib.gridspec as gridspec
-import plotly.graph_objs as go, plotly
-import plotly.figure_factory as ff
 import json
+import math
+import os
+import pdb
 import random as rnd
-import pandas as pd
+import shutil
 import warnings
 
-from numba import jit
-
-from matplotlib import pyplot as plt
+import imageio
+import matplotlib.gridspec as gridspec
+import numpy as np
+import pandas as pd
+import plotly
+import plotly.figure_factory as ff
+import plotly.graph_objs as go
+from IPython.display import HTML, display
 from matplotlib import patches as patches
-from sklearn import datasets
-from scipy import misc
-from IPython.display import display, HTML
-
+from matplotlib import pyplot as plt
+from numba import jit
 from plotly.offline import init_notebook_mode, iplot, plot
+from scipy import misc
+from sklearn import datasets
+
 
 class GEMA:
 
@@ -53,7 +58,10 @@ class GEMA:
     mean_distance_map = 0
     neurons_per_num_activations = None
     topological_map = 0
-
+    topological_error = 0
+    quantization_error = 0
+    topological_error_map = 0
+    quantization_error_map = 0
 
     ######################################################
     #                    CONSTRUCTOR                     #
@@ -299,7 +307,12 @@ class GEMA:
         self.activations_map = np.zeros((self.map_size, self.map_size), dtype=int)
         self.distances_map = np.zeros((self.map_size, self.map_size), dtype=float)
         num = 0
-        self.topological_map = 0
+        self.topological_map =np.zeros((self.map_size, self.map_size), dtype=float)
+        self.topological_error = 0
+        self.quantization_error = 0
+        self.topological_error_map = np.zeros((self.map_size, self.map_size), dtype=float)
+        self.quantization_error_map = np.zeros((self.map_size, self.map_size), dtype=float)
+
 
         structure = {
                 'labels': self.classification_labels.tolist(),
@@ -328,7 +341,7 @@ class GEMA:
 
             # If the second best neuron is inside the
             if self.vector_distance(bmu[3], bmu[1]) > 1:
-                self.topological_map += 1
+                self.topological_map[bmu_x][bmu_y] += 1
 
             # Saving information in the maps
             distance = self.vector_distance(classification_data[pattern], self.weights[bmu_x][bmu_y])
@@ -357,6 +370,14 @@ class GEMA:
         # Decreasing the number of decimal places to 5
         self.distances_map = np.around(self.distances_map, decimals = 5)
 
+        # Calculating topological error and map
+        self.topological_error = np.sum(self.topological_map)/np.sum(self.activations_map)
+        self.topological_error_map =  np.divide(self.topological_map, self.activations_map, out=np.zeros_like(self.topological_map), where=self.activations_map!=0)
+
+        # Calculating quantization error and map
+        self.quantization_error = np.sum(self.distances_map)/np.sum(self.activations_map)
+        self.quantization_error_map = np.divide(self.distances_map, self.activations_map, out=np.zeros_like(self.topological_map), where=self.activations_map!=0)
+
         # Showing information to the user (statistics)
         if verbose == 1:
             self.show_classification_data_summary()
@@ -383,11 +404,14 @@ class GEMA:
         print("Initial weights: " + self.initial_weights)
 
         print("\n---- Classification results ----")
-        print("Topological Map: " + str(self.topological_map))
+        print("Topological Error: " + str(self.topological_error))
+        print("Topological Map: " + str(self.topological_error_map))
         print("\nNumber of classes/activations: " + str(self.num_activations))
         print("Activations Map: \n" + str(self.activations_map))
         print("\nMean distance of the map: " + str(self.mean_distance_map))
         print("Distance map: \n" + str(self.distances_map))
+        print("Quantization error: " + str(self.quantization_error))
+        print("Classes quantization error: " + str(self.quantization_error_map))
         print("\nClassification table:")
         display(self.classification_map)
 
@@ -424,12 +448,12 @@ class GEMA:
         plotly.tools.set_credentials_file(username=username, api_key=api_key)
 
     # HEAT MAP
-    def heat_map(self, filename='heat_map'):
+    def heat_map(self, filename='heat_map', colorscale = 'RdBu'):
 
         # MODIFIED. Activation map rotated 90º so it matches with the Heat Map visualisation
-        map_rot = np.rot90(self.activations_map)
+        map_rot = np.transpose(np.rot90(self.activations_map))
 
-        fig = ff.create_annotated_heatmap(map_rot, showscale= True)
+        fig = ff.create_annotated_heatmap(map_rot, showscale= True, colorscale = colorscale)
 
         iplot(fig, filename=filename)
 
@@ -477,7 +501,7 @@ class GEMA:
             'xaxis': {'title': 'Times Activated'},
             'yaxis': {'title': 'Number of Neurons'},
             'barmode': 'relative'
-            };
+            }
         iplot({'data': data_bar, 'layout': layout}, filename=filename)
 
     # NEURONS PER NUM ACTIVATIONS
@@ -489,6 +513,30 @@ class GEMA:
             neurons_per_num_activations[i] = np.count_nonzero(self.activations_map == i)
 
         self.bar_chart(data=neurons_per_num_activations, filename=filename)
+
+
+    #TODO Comprobar el funcionamiento correcto
+    # Print a codebook vector specified by index
+    def codebook_vector(self, index = 0, header = 'none', filename='codebook_vector'):
+
+        map_rot = np.transpose(np.rot90(np.around(self.weights[:,:,index], decimals = 2)))
+
+        fig = ff.create_annotated_heatmap(map_rot, showscale= True)
+        if(header is not 'none'):
+            fig.layout.title = header
+
+        # Make text size smaller
+        for i in range(len(fig.layout.annotations)):
+            fig.layout.annotations[i].font.size = 7
+
+        iplot(fig, filename=filename)
+
+    # Print all codebooks for a som
+    def codebook_vectors(self, headers = np.array([])):
+        if(headers.size < 1):
+            headers = np.arange(self.input_data_dimension) 
+        for i in range(0, self.input_data_dimension):
+            self.codebook_vector(i, headers[i])            
 
 
     ######################################################
@@ -606,6 +654,9 @@ class GEMA:
     def get_neurons_per_num_activations(self):
         return self.neurons_per_num_activations
 
+    def get_classification_map(self):
+        return self.classification_map
+
     def set_map_size(self, value):
         self.map_size = value
 
@@ -712,7 +763,9 @@ class GEMA:
                 self.input_data_dimension = model['input_data_dimension']
                 self.weights = np.array(model['weights'])
                 self.num_data = model['num_data']
-                self.topological_map = model['topological_map']
+                self.topological_map = np.array(model['topological_map'])
+                self.topological_error = model['topological_error']
+                self.quantization_error = model['quantization_error']
                 self.activations_map = np.array(model['activations_map'])
                 self.distances_map = np.array(model['distances_map'])
                 self.num_activations = model['num_activations']
@@ -745,7 +798,9 @@ class GEMA:
             'input_data_dimension' : self.input_data_dimension,
             'weights' : self.weights.tolist(),
             'num_data' : self.num_data,
-            'topological_map' : self.topological_map,
+            'topological_map' : self.topological_map.tolist(),
+            'topological_error' : self.topological_error,
+            'quantization_error' : self.quantization_error,
             'activations_map' : self.activations_map.tolist(),
             'distances_map' : self.distances_map.tolist(),
             'num_activations' : self.num_activations,
