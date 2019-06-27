@@ -2,18 +2,27 @@
 GEMA is a Python library which can be used to develop and train Self-Organizing Maps (SOMs). It also allows users to classify new individuals, obtain reports and visualize the information with interactive graphs.
 NOTE: GEMA has only been implemented in Python 3.0
 
-## Home page
-https://gema.adriiiprieto.es/
 ### Installation
-GEMA is still not available to be installed using pip
+Gema is now available on pip and conda:
+- Pip:
+	`pip install GEMA`
+-Conda (for now only for Windows x64):
+	`conda install -c ceiecadmin gema`
+
+## Usage instructions
+For usage instructions refer to:
+[Wiki](https://github.com/ufvceiec/GEMA/wiki)
+
 ### Requirements:
 - NumPy
+- tqdm
 - Pandas
 - matplotlib
 - Plotly
 - scikit-learn
 - scipy
 - numba
+- imageio
 
 ## Contact
 - Responsible: Alberto Nogales alberto.nogales@ceiec.es
@@ -22,3 +31,4 @@ GEMA is still not available to be installed using pip
 - Contributors: Santiago Donaher Naranjo
 
 Under license of CEIEC http://www.ceiec.es
+
