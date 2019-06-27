@@ -6,6 +6,48 @@ from numba import jit
 class Map:
 	
 	def __init__(self, 
+			  data = None,
+			  size = -1, 
+			  period = 10,
+			  initial_lr =0.1,
+			  initial_neighbourhood = 0,
+			  distance = 'euclidean',
+			  use_decay = False,
+			  reinforcement=0, 
+			  extension=1, 
+			  compression=0.5, 
+			  normalization='none', 
+			  presentation='random', 
+			  weights='random'):
+		if data is None:
+			self.map_size = size
+			self.presentation = presentation
+			self.initial_lr = initial_lr
+			self.distance = distance
+			self.use_decay = use_decay
+			self.num_data = 0
+			self.input_data_dimension = 0
+			self.period = period
+			self.neighbourhood = initial_neighbourhood if initial_neighbourhood is not 0 else size
+			# Initialize weights
+			self.weights = 0
+		else:
+			train(
+			  data,
+			  size, 
+			  period,
+			  initial_lr,
+			  initial_neighbourhood,
+			  distance,
+			  use_decay,
+			  reinforcement, 
+			  extension, 
+			  compression, 
+			  normalization, 
+			  presentation, 
+			  weights)
+	
+	def train(self, 
 			  data,
 			  size = -1, 
 			  period = 10,
@@ -17,7 +59,6 @@ class Map:
 			  extension=1, 
 			  compression=0.5, 
 			  normalization='none', 
-			  snapshot=0, 
 			  presentation='random', 
 			  weights='random'):
 
@@ -28,10 +69,6 @@ class Map:
 
 		if (initial_lr > 1 or initial_lr < 0):
 			print('Learning rate initial must be between 0 and 1')
-			return -1
-
-		if (snapshot < 0 and snapshot > period):
-			print('Snapshot must be between 0 and period')
 			return -1
 
 		if(size != -1):
@@ -174,7 +211,6 @@ class Map:
 					self.weights[x][y] = self.weights[x][y] + eta * a * (pattern - self.weights[x][y])
 
 
-	
 	def __normalize(self, data, method):
 		if method is not 'none':
 			if method == 'fwn':
@@ -233,7 +269,8 @@ class Map:
 	######################################################
 
 	# LOAD CLASSIFIER FROM THE FILE
-	def load_classifier(self, filename='Model', verbose = 1):
+	@classmethod
+	def load_classifier(cls,filename='Model', verbose = 1):
 
 		# Opening the JSON file and getting all the models
 		with open(filename + '.json') as json_file:
@@ -241,12 +278,30 @@ class Map:
 
 			# Reading and setting all the attributes
 			for model in data['model']:
-				self.map_size = model['map_size']
-				self.input_data_dimension = model['input_data_dimension']
-				self.weights = np.array(model['weights'])
+				map_size = model['map_size']
+				input_data_dimension = model['input_data_dimension']
+				presentation = model['presentation']
+				initial_lr = model['initial_lr']
+				distance = model['distance']
+				use_decay = model['use_decay']
+				num_data = model['num_data']
+				period = model['period']
+				neighbourhood = model['neighbourhood']
+				weights = np.array(model['weights'])
+
+		new_map = Map(map_size, 
+					  period,
+					  initial_lr,
+					  neighbourhood,
+					  distance,
+					  use_decay)
+		
+		new_map.weights = weights
 
 		# Showing a message to the user
 		print('Imported successfully')
+
+		return new_map
 
 	# SAVE CLASSIFIER IN THE FILE
 	def save_classifier(self, filename='Model'):
@@ -260,7 +315,14 @@ class Map:
 		data['model'].append({
 			'map_size' : self.map_size,
 			'input_data_dimension' : self.input_data_dimension,
-			'weights' : self.weights.tolist(),
+			'presentation': self.presentation,
+			'initial_lr': self.initial_lr,
+			'distance': self.distance,
+			'use_decay': self.use_decay,
+			'num_data': self.num_data,
+			'period': self.period,
+			'neighbourhood': self.neighbourhood,
+			'weights' : self.weights.tolist()
 		})
 
 		# Writing in the file
