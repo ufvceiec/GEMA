@@ -299,6 +299,10 @@ class Map:
 					)
 		
 		new_map.weights = weights
+		new_map.input_data_dimension = input_data_dimension
+		new_map.presentation = presentation
+		new_map.num_data = num_data
+
 
 		# Showing a message to the user
 		print('Imported successfully')
