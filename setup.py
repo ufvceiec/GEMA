@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
 	name="GEMA",
-	version = "0.2.1",
+	version = "0.3",
     author="UFV CEIEC",
     author_email="ceiec.info@ceiec.es",
     description="A library to build and study Self-Organizing-Maps",
