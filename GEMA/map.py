@@ -32,7 +32,7 @@ class Map:
 			# Initialize weights
 			self.weights = 0
 		else:
-			train(
+			self.train(
 			  data,
 			  size, 
 			  period,
