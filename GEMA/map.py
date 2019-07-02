@@ -289,12 +289,14 @@ class Map:
 				neighbourhood = model['neighbourhood']
 				weights = np.array(model['weights'])
 
-		new_map = Map(map_size, 
-					  period,
-					  initial_lr,
-					  neighbourhood,
-					  distance,
-					  use_decay)
+		new_map = Map(data = None,
+					  size = map_size, 
+					  period = period,
+					  initial_lr = initial_lr,
+					  initial_neighbourhood = neighbourhood,
+					  distance = distance,
+					  use_decay = use_decay
+					)
 		
 		new_map.weights = weights
 
