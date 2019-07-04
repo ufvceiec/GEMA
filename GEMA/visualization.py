@@ -24,7 +24,7 @@ class visualization:
 	def heat_map(classification, filename='heat_map', colorscale = 'Reds', cmax = 0):
 		init_notebook_mode(connected=True)
 		# MODIFIED. Activation map rotated 90º so it matches with the Heat Map visualisation
-		map_rot = np.transpose(np.rot90(classification.activations_map))
+		map_rot = np.transpose(classification.activations_map)
 		cmax = np.max(classification.activations_map) if cmax is 0 else cmax
 		fig = ff.create_annotated_heatmap(map_rot, showscale= True, colorscale = colorscale, zmin=0, zmax = cmax)
 
@@ -36,7 +36,7 @@ class visualization:
 		init_notebook_mode(connected=True)
 
 		# MODIFIED. Activation map rotated 90º so it matches with the Elevation Map visualisation
-		map_rot = np.rot90(classification.activations_map)
+		map_rot = np.rot90(classification.activations_map, k = -1)
 
 		data = [
 			go.Surface(
@@ -114,7 +114,7 @@ class visualization:
 	def codebook_vector(map, index = 0, header = 'none', filename='codebook_vector'):
 		init_notebook_mode(connected=True)
 
-		map_rot = np.transpose(np.rot90(np.around(map.weights[:,:,index], decimals = 2)))
+		map_rot = np.transpose(np.around(map.weights[:,:,index], decimals = 2))
 
 		fig = ff.create_annotated_heatmap(map_rot, showscale= True)
 		if(header is not 'none'):
