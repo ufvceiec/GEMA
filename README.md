@@ -27,7 +27,7 @@ For usage instructions refer to:
 ## Contact
 - Responsible: Alberto Nogales alberto.nogales@ceiec.es
 - Supervisors: Alberto Nogales, Álvaro José García-Tejedor
-- Main developers: Adrián Prieto and Gonzalo de las Heras de Matías (actual developer)
+- Main developers: Adrián Prieto, Gonzalo de las Heras de Matías, Antonio Pérez Morales(actual developer)
 - Contributors: Santiago Donaher Naranjo
 
 Under license of CEIEC http://www.ceiec.es
