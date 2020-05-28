@@ -21,3 +21,5 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+/.idea/
+*/.ipynb_checkpoints/

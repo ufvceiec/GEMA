@@ -1,5 +1,5 @@
 from .map import Map
-from .classification import classification
-from .visualization import visualization
+from .classification import Classification
+from .visualization import Visualization
 
 name = "GEMAPY"

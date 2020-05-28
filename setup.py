@@ -1,11 +1,11 @@
 import setuptools
 
 with open("README.md", "r", encoding="utf-8") as fh:
-	long_description = fh.read()
+    long_description = fh.read()
 
 setuptools.setup(
-	name="GEMA",
-	version = "0.3.2",
+    name="GEMA",
+    version="0.4",
     author="UFV CEIEC",
     author_email="ceiec.info@ceiec.es",
     description="A library to build and study Self-Organizing-Maps",
