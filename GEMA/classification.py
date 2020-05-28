@@ -65,7 +65,7 @@ class Classification:
                 self.topological_map[bmu_pos] += 1
 
             # Saving information in the maps
-            distance = Map.vector_distance(som.weights[bmu_pos], pattern)
+            distance = Map.vector_distance(som.weights[bmu_pos], self.classification_data[pattern])
             self.activations_map[bmu_pos] += 1
             self.distances_map[bmu_pos] += distance
 
