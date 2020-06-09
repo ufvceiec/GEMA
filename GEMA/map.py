@@ -351,8 +351,8 @@ class Map:
 
             for i in range(total_weights):
                 weights_list.append(
-                    data[np.randint(0, self.num_data - 1)][
-                        np.randint(0, self.input_data_dimension - 1)])
+                    data[np.random.randint(0, self.num_data - 1)][
+                        np.random.randint(0, self.input_data_dimension - 1)])
 
             return np.array(weights_list).reshape((self.map_size, self.map_size,
                                                    self.input_data_dimension))
