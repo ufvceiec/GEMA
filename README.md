@@ -1,5 +1,6 @@
 # GEMA
 GEMA is a Python library which can be used to develop and train Self-Organizing Maps (SOMs). It also allows users to classify new individuals, obtain reports and visualize the information with interactive graphs.
+mailing-list: gema-som@googlegroups.com
 NOTE: GEMA has only been implemented in Python 3.0
 
 ### Installation
