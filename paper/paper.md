@@ -33,13 +33,13 @@ GEMA is a library that has been developed to facilitate the management of Kohone
 
 Neural networks require prior dataset manipulation to make it understandable by the network. These processes are grouped into a set of operations called preprocessing, mainly data normalization, although all statistical analysis of the dataset can also be carried out. The training/learning process involves an incremental adaptation of neurons’ weight vectors using a training dataset of unlabeled input vectors until a coherent clustering (a map) is obtained accordingly. A clean SOM is obtained as an instance of class GEMA by a call that sets the map side. It is very usual that once a good SOM has been obtained, the user is interested in saving it and use it in the future. To accomplish this task, the library provides the possibility of saving the information of the map as a JSON. Thus, a pre-trained model can also be loaded with this saved model. The process to classify a data set with a network using this library is practically the same as the training, except that no weight is modified, and other parameters are not necessary. Only the winning neuron is calculated for each sample to be categorized. The trained map receives unlabeled patterns to be clustered in the space by calculating a discriminant function (for example the Euclidean distance) between each element to be classified and the SOM weight matrix. Finally, a visualization/reporting stage where the user can ask for different plots and reports that provide a friendly interpretation of the results (input dataset and codebooks), cluster analysis and quality measurements. Fig. 1 describes all the methods and the different architectural elements involved.
 
-![Fig 1. GEMA workflow and interaction between modules.\label{fig:Fig1}](Images/Fig1.png "Fig 1. GEMA workflow and interaction between modules.")
+![Fig 1. GEMA workflow and interaction between modules.\label{fig:Fig1}](Images/Fig1.png "GEMA workflow and interaction between modules.")
 
 
 
 Fig. 2 shows the same process by implementing the code. In this case a Kohonen map of size 10 is initialized and trained with data from a csv file. The training stage consists of 50000 epochs and uses a learning rate of 0.1. Then, this SOM is used to classify some data instances. At the end, two type of plots have been obtained: a 3D and a 2D heatmap.
 
-![Fig 2. GEMA coding example of a complete workflow.\label{fig:Fig2}](Images/Fig2.jpg "Fig 2. GEMA coding example of a complete workflow.")
+![Fig 2. GEMA coding example of a complete workflow.\label{fig:Fig2}](Images/Fig2.jpg "GEMA coding example of a complete workflow.")
 
 
 
