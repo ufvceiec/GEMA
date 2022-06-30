@@ -33,5 +33,6 @@ For usage instructions refer to:
 
 Under license of CEIEC http://www.ceiec.es
 
-Cite it as: García-Tejedor, Álvaro José, and Alberto Nogales. 2022. “An Open-Source Python Library for Self-Organizing-Maps.” Software Impacts 12. https://doi.org/10.1016/j.simpa.2022.100280.
+## Cite it as: 
+García-Tejedor, Álvaro José, and Alberto Nogales. 2022. “An Open-Source Python Library for Self-Organizing-Maps.” Software Impacts 12. https://doi.org/10.1016/j.simpa.2022.100280.
 
