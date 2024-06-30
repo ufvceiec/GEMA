@@ -1,7 +1,7 @@
 import json
 import numpy as np
 from tqdm.auto import tqdm
-
+from sklearn.preprocessing import StandardScaler
 
 class Map:
     """
@@ -46,6 +46,7 @@ class Map:
             - 'random': From 0 to 1
             - 'random_negative': From -1 to 1
             - 'sample': Takes samples from data. This is useful if data is not normalized
+            - 'PCA': sequence of vectors taken along a hyperplane spanned by the two largest principal components of the dataset.
         """
 
         # Checking input parameters
@@ -356,6 +357,17 @@ class Map:
 
             return np.array(weights_list).reshape((self.map_size, self.map_size,
                                                    self.input_data_dimension))
+
+        elif method == 'PCA':
+            scaler=StandardScaler()
+            standardized_data=scaler.fit_transform(data)
+            pca_weights = np.zeros((self.map_size, self.map_size, self.input_data_dimension))
+            pc_length, pc = np.linalg.eig(np.cov(np.transpose(standardized_data)))
+            pc_order = np.argsort(-pc_length)
+            for i, c1 in enumerate(np.linspace(-1, 1, self.map_size)):
+                for j, c2 in enumerate(np.linspace(-1, 1, self.map_size)):
+                    pca_weights[i, j] = c1 * pc[:, pc_order[0]] + c2 * pc[:, pc_order[1]]
+            return pca_weights
 
     ######################################################
     #                    JSON METHODS                    #
