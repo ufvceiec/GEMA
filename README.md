@@ -28,8 +28,8 @@ For usage instructions refer to:
 ## Contact
 - Responsible: Alberto Nogales alberto.nogales@ceiec.es
 - Supervisors: Alberto Nogales, Álvaro José García-Tejedor
-- Main developers: Adrián Prieto, Gonzalo de las Heras de Matías, Antonio Pérez Morales(actual developer)
-- Contributors: Santiago Donaher Naranjo
+- Main developers: Adrián Prieto, Gonzalo de las Heras de Matías, Antonio Pérez Morales
+- Contributors: Santiago Donaher Naranjo, Afonso Reis (Instituto Superior Técnico in Lisbon)
 
 Under license of CEIEC http://www.ceiec.es
 
