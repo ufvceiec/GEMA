@@ -20,7 +20,7 @@ class Visualization:
         init_notebook_mode(connected=True)
         # MODIFIED. Activation map rotated 90º so it matches with the Heat Map visualisation
         map_rot = np.transpose(classification.activations_map)
-        cmax = np.max(classification.activations_map) if cmax is 0 else cmax
+        cmax = np.max(classification.activations_map) if cmax == 0 else cmax
         fig = ff.create_annotated_heatmap(map_rot, showscale=True, colorscale=colorscale, zmin=0, zmax=cmax)
 
         iplot(fig, filename=filename)
@@ -111,7 +111,7 @@ class Visualization:
         map_rot = np.transpose(np.around(map.weights[:, :, index], decimals=2))
 
         fig = ff.create_annotated_heatmap(map_rot, showscale=True)
-        if header is not 'none':
+        if header != 'none':
             fig.layout.title = header
 
         # Make text size smaller
@@ -139,6 +139,6 @@ class Visualization:
         for i in range(map.map_size):
             for j in range(map.map_size):
                 weights = np.rot90(map.weights)
-                ax[i, j].xticks = (np.arange(map.input_data_dimension), labels)
+                ax[i, j].set_xticks(np.arange(map.input_data_dimension), labels)
                 ax[i, j].plot(weights[i, j], label='[' + str(j) + ',' + str(i) + ']')
         fig.savefig(filename)

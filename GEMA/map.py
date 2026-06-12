@@ -66,7 +66,7 @@ class Map:
         self.num_data = 0
         self.input_data_dimension = 0
         self.period = period
-        self.neighbourhood = initial_neighbourhood if initial_neighbourhood is not 0 \
+        self.neighbourhood = initial_neighbourhood if initial_neighbourhood != 0 \
             else size
         self.normalization = normalization
         self.presentation = presentation
@@ -109,7 +109,7 @@ class Map:
                 new_pattern = training_data[numPresentation % self.num_data]
             else:
                 # Select patterns randomly
-                new_pattern = training_data[np.random.randint(0, self.num_data - 1)]
+                new_pattern = training_data[np.random.randint(0, self.num_data)]
 
             # Getting the winner neuron
             bmu = self.calculate_bmu(new_pattern)
@@ -154,7 +154,7 @@ class Map:
                     new_pattern = training_data[numPresentation % self.num_data]
                 else:
                     # Select patterns randomly
-                    new_pattern = training_data[np.random.randint(0, self.num_data - 1)]
+                    new_pattern = training_data[np.random.randint(0, self.num_data)]
 
                 # Getting the winner neuron
                 bmu = self.calculate_bmu(new_pattern)
@@ -295,7 +295,7 @@ class Map:
             - 'euclidean': Euclidean Normalization
         :return:
         """
-        if method is not 'none':
+        if method != 'none':
             if method == 'fwn':
                 # Feature Wise Normalization
 
@@ -310,13 +310,13 @@ class Map:
                 # Euclidean Normalization
                 training_data_temp = data
                 data = np.empty(training_data_temp.shape, dtype=float)
-                for vector in range(training_data_temp.shape[0] - 1):
+                for vector in range(training_data_temp.shape[0]):
                     temp = 0
-                    for component in range(training_data_temp.shape[1] - 1):
+                    for component in range(training_data_temp.shape[1]):
                         temp = temp + training_data_temp[vector, component] ** 2
                     temp = np.sqrt(temp)
 
-                    for component in range(training_data_temp.shape[1] - 1):
+                    for component in range(training_data_temp.shape[1]):
                         data[vector, component] = training_data_temp[vector, component] \
                                                   / temp
             if method == '01scale':
@@ -352,8 +352,8 @@ class Map:
 
             for i in range(total_weights):
                 weights_list.append(
-                    data[np.random.randint(0, self.num_data - 1)][
-                        np.random.randint(0, self.input_data_dimension - 1)])
+                    data[np.random.randint(0, self.num_data)][
+                        np.random.randint(0, self.input_data_dimension)])
 
             return np.array(weights_list).reshape((self.map_size, self.map_size,
                                                    self.input_data_dimension))
