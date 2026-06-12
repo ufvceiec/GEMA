@@ -1,5 +1,7 @@
-matplotlib
-plotly
+numpy
 tqdm
 pandas
-numpy
+matplotlib
+plotly
+scikit-learn
+scipy

@@ -15,7 +15,7 @@ authors:
     affiliation: 1
 
 affiliations:
- - name: CEIEC Research Institure, Universidad Francisco de Vitoria, Ctra. M-515 Pozuelo-Majadahona km 1,800, 28223 Pozuelo de Alarcón, Spain
+ - name: CEIEC Research Institute, Universidad Francisco de Vitoria, Ctra. M-515 Pozuelo-Majadahonda km 1,800, 28223 Pozuelo de Alarcón, Spain
    index: 1
 date: 08 February 2022
 bibliography: sample.bib

@@ -1,5 +1,9 @@
-__pycache__
-TODO.txt
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
 
 # Distribution / packaging
 .Python
@@ -21,5 +25,30 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-/.idea/
+
+# Jupyter
+.ipynb_checkpoints/
 */.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Saved models
+*.json
+
+# Misc
+TODO.txt
