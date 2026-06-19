@@ -1,5 +1,10 @@
 # GEMA — Self-Organizing Maps in Python
 
+[![Tests](https://github.com/ufvceiec/GEMA/actions/workflows/tests.yml/badge.svg)](https://github.com/ufvceiec/GEMA/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://www.python.org/downloads/)
+[![PyPI](https://img.shields.io/pypi/v/GEMA?color=blue)](https://pypi.org/project/GEMA/)
+[![License](https://img.shields.io/github/license/ufvceiec/GEMA.svg)](LICENSE)
+
 **GEMA** (*GEnerador de Mapas Autoasociativos*) is an open-source Python library for building, training, and analysing Self-Organizing Maps (SOMs / Kohonen maps). It covers the full workflow: data normalisation → training → classification → quality metrics → interactive visualisation.
 
 > **Cite as:**  

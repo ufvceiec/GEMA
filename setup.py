@@ -6,14 +6,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="GEMA",
     version="0.4.3",
-    author="UFV CEIEC",
-    author_email="ceiec.info@ceiec.es",
+    author="Alberto Nogales, Álvaro José García-Tejedor",
+    author_email="alberto.nogales@uah.es",
     description="A library to build and study Self-Organizing-Maps",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ufvceiec/GEMA",
     packages=setuptools.find_packages(),
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     install_requires=[
         "numpy",
         "tqdm",
@@ -23,6 +23,9 @@ setuptools.setup(
         "scikit-learn",
         "scipy",
     ],
+    extras_require={
+        'test': ['pytest>=7.0', 'pytest-cov>=4.0'],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
