@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: "GEMA: An Open-Source Python Library for Self-Organizing-Maps"
+version: "0.4.3"
+date-released: "2022-01-01"
+license: GPL-3.0-only
+url: "https://github.com/ufvceiec/GEMA"
+repository-code: "https://github.com/ufvceiec/GEMA"
+authors:
+  - family-names: "García-Tejedor"
+    given-names: "Álvaro José"
+  - family-names: "Nogales"
+    given-names: "Alberto"
+    email: "alberto.nogales@uah.es"
+preferred-citation:
+  type: article
+  title: "An Open-Source Python Library for Self-Organizing-Maps"
+  authors:
+    - family-names: "García-Tejedor"
+      given-names: "Álvaro José"
+    - family-names: "Nogales"
+      given-names: "Alberto"
+  journal: "Software Impacts"
+  volume: 12
+  year: 2022
+  doi: "10.1016/j.simpa.2022.100280"
