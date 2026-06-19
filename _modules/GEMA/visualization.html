@@ -1,0 +1,290 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GEMA.visualization &mdash; GEMA 0.4.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5bfaad31"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GEMA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GEMA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">GEMA.visualization</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for GEMA.visualization</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.figure_factory</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ff</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.graph_objs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">go</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">plotly.offline</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_notebook_mode</span><span class="p">,</span> <span class="n">iplot</span><span class="p">,</span> <span class="n">plot</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+<div class="viewcode-block" id="display">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.display">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># type: ignore[misc]</span>
+        <span class="k">pass</span>  <span class="c1"># no-op outside Jupyter</span></div>
+
+
+
+<div class="viewcode-block" id="Visualization">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Visualization</span><span class="p">:</span>
+    <span class="c1"># SET PLOTLY CREDENTIALS</span>
+<div class="viewcode-block" id="Visualization.set_plotly_credentials">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.set_plotly_credentials">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_plotly_credentials</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">api_key</span><span class="p">):</span>
+        <span class="n">plotly</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">set_credentials_file</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span></div>
+
+
+    <span class="c1"># HEAT MAP</span>
+<div class="viewcode-block" id="Visualization.heat_map">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.heat_map">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">heat_map</span><span class="p">(</span><span class="n">classification</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;heat_map&#39;</span><span class="p">,</span> <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">,</span> <span class="n">cmax</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">init_notebook_mode</span><span class="p">(</span><span class="n">connected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># MODIFIED. Activation map rotated 90º so it matches with the Heat Map visualisation</span>
+        <span class="n">map_rot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">classification</span><span class="o">.</span><span class="n">activations_map</span><span class="p">)</span>
+        <span class="n">cmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">classification</span><span class="o">.</span><span class="n">activations_map</span><span class="p">)</span> <span class="k">if</span> <span class="n">cmax</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">cmax</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">create_annotated_heatmap</span><span class="p">(</span><span class="n">map_rot</span><span class="p">,</span> <span class="n">showscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorscale</span><span class="o">=</span><span class="n">colorscale</span><span class="p">,</span> <span class="n">zmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">zmax</span><span class="o">=</span><span class="n">cmax</span><span class="p">)</span>
+
+        <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+    <span class="c1"># ELEVATION MAP</span>
+<div class="viewcode-block" id="Visualization.elevation_map">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.elevation_map">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">elevation_map</span><span class="p">(</span><span class="n">classification</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;elevation_map&#39;</span><span class="p">):</span>
+        <span class="n">init_notebook_mode</span><span class="p">(</span><span class="n">connected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># MODIFIED. Activation map rotated 90º so it matches with the Elevation Map visualisation</span>
+        <span class="n">map_rot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">classification</span><span class="o">.</span><span class="n">activations_map</span><span class="p">,</span> <span class="n">k</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">go</span><span class="o">.</span><span class="n">Surface</span><span class="p">(</span>
+                <span class="n">z</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">map_rot</span><span class="p">),</span>
+                <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+            <span class="n">autosize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+            <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">l</span><span class="o">=</span><span class="mi">65</span><span class="p">,</span>
+                <span class="n">r</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                <span class="n">b</span><span class="o">=</span><span class="mi">65</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="mi">90</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+        <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+    <span class="c1"># CHARACTERISTICS GRAPH</span>
+<div class="viewcode-block" id="Visualization.characteristics_graph">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.characteristics_graph">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">characteristics_graph</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="n">size_x</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">size_y</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">45</span><span class="p">):</span>
+        <span class="nb">map</span><span class="o">.</span><span class="n">characteristics_data_labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">column</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">size_x</span><span class="p">,</span> <span class="n">size_y</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">map</span><span class="o">.</span><span class="n">characteristics_data_labels</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">),</span> <span class="nb">map</span><span class="o">.</span><span class="n">characteristics_data_labels</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">display</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">column</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">))</span></div>
+
+
+    <span class="c1"># CHARACTERISTICS GRAPH</span>
+<div class="viewcode-block" id="Visualization.characteristics_bargraph">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.characteristics_bargraph">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">characteristics_bargraph</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="n">size_x</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">size_y</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">45</span><span class="p">):</span>
+        <span class="nb">map</span><span class="o">.</span><span class="n">characteristics_data_labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">column</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">size_x</span><span class="p">,</span> <span class="n">size_y</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">map</span><span class="o">.</span><span class="n">characteristics_data_labels</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">),</span> <span class="nb">map</span><span class="o">.</span><span class="n">characteristics_data_labels</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">rainbow</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;tab20&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">display</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">column</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">,</span>
+                        <span class="n">color</span><span class="o">=</span><span class="n">rainbow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))))</span></div>
+
+
+    <span class="c1"># BAR CHAR</span>
+<div class="viewcode-block" id="Visualization.bar_chart">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.bar_chart">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bar_chart</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;bar_chart&#39;</span><span class="p">):</span>
+        <span class="n">init_notebook_mode</span><span class="p">(</span><span class="n">connected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">data_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">data_bar</span> <span class="o">=</span> <span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">Bar</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">data_np</span><span class="p">)]</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;xaxis&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;Times Activated&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;yaxis&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;Number of Neurons&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;barmode&#39;</span><span class="p">:</span> <span class="s1">&#39;relative&#39;</span>
+        <span class="p">}</span>
+        <span class="n">iplot</span><span class="p">({</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">data_bar</span><span class="p">,</span> <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="n">layout</span><span class="p">},</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+    <span class="c1"># NEURONS PER NUM ACTIVATIONS</span>
+<div class="viewcode-block" id="Visualization.neurons_per_num_activations_map">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.neurons_per_num_activations_map">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">neurons_per_num_activations_map</span><span class="p">(</span><span class="n">classification</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;neurons_per_num_activations_map&#39;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">num_max_activations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">classification</span><span class="o">.</span><span class="n">activations_map</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">neurons_per_num_activations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_max_activations</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_max_activations</span><span class="p">):</span>
+            <span class="n">neurons_per_num_activations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">classification</span><span class="o">.</span><span class="n">activations_map</span> <span class="o">==</span> <span class="n">i</span><span class="p">)</span>
+
+        <span class="n">Visualization</span><span class="o">.</span><span class="n">bar_chart</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">neurons_per_num_activations</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+    <span class="c1"># TODO Comprobar el funcionamiento correcto</span>
+    <span class="c1"># Print a codebook vector specified by index</span>
+<div class="viewcode-block" id="Visualization.codebook_vector">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.codebook_vector">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">codebook_vector</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;codebook_vector&#39;</span><span class="p">):</span>
+        <span class="n">init_notebook_mode</span><span class="p">(</span><span class="n">connected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">map_rot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">weights</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">index</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">create_annotated_heatmap</span><span class="p">(</span><span class="n">map_rot</span><span class="p">,</span> <span class="n">showscale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">header</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">header</span>
+
+        <span class="c1"># Make text size smaller</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">annotations</span><span class="p">)):</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">annotations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">font</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="mi">7</span>
+
+        <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+    <span class="c1"># Print all codebooks for a som</span>
+<div class="viewcode-block" id="Visualization.codebook_vectors">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.codebook_vectors">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">codebook_vectors</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])):</span>
+        <span class="k">if</span> <span class="n">headers</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">map</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">):</span>
+            <span class="n">Visualization</span><span class="o">.</span><span class="n">codebook_vector</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">headers</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="Visualization.umatrix">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.umatrix">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">umatrix</span><span class="p">(</span><span class="n">classification</span><span class="p">,</span> <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">classification</span><span class="o">.</span><span class="n">umatriz</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">colorscale</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Visualization.full_map_weights">
+<a class="viewcode-back" href="../../api.html#GEMA.visualization.Visualization.full_map_weights">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">full_map_weights</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="n">size_x</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">size_y</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;full_map_weights&#39;</span><span class="p">):</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="nb">map</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="s1">&#39;col&#39;</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">size_x</span><span class="p">,</span> <span class="n">size_y</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">map</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">),</span> <span class="n">labels</span><span class="p">)</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alberto Nogales, Álvaro José García-Tejedor.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

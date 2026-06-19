@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GEMA.map &mdash; GEMA 0.4.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5bfaad31"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GEMA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GEMA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">GEMA.map</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for GEMA.map</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<div class="viewcode-block" id="Map">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Map</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Map class is the main component of GEMA. It contains the classifying map that allows for classification and</span>
+<span class="sd">    is subject of analysis in search of data information</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">period</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">initial_lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">initial_neighbourhood</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+                 <span class="n">use_decay</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">normalization</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+                 <span class="n">presentation</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span>
+                 <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializing the map requires some information provided</span>
+
+<span class="sd">        :param data: numpy array of 2 dimensions. First dimension corresponds to data samples, while the second</span>
+<span class="sd">        represents an specific sample&#39;s data</span>
+<span class="sd">        :param size: size of the side of the map. Resulting map will be of dimension: size x size x data_depth</span>
+<span class="sd">        :param period: Number of iterations to train the map for. A small number will produced an undertrained</span>
+<span class="sd">        map, while a bigger one will compress the borders, resulting in many activations on the sides of the map</span>
+<span class="sd">        :param initial_lr: Learning rate determines how much neurons will move on the map</span>
+<span class="sd">        :param initial_neighbourhood: Initial neighbourhood determines how many neurons will learn. If none is</span>
+<span class="sd">        provided, it will default to size</span>
+<span class="sd">        :param distance: Determines the way distance will be calculated. Current options include:</span>
+<span class="sd">            - &#39;euclidean&#39;</span>
+<span class="sd">            - &#39;chebyshev&#39;</span>
+<span class="sd">        :param use_decay: If set to True, neurons further away from the bmu will learn less than those closer</span>
+<span class="sd">        :param normalization: Allows some normalization of input data. We do not recommend doing this, but normalizing</span>
+<span class="sd">        the data previously. Current options include:</span>
+<span class="sd">            - &#39;none&#39;: Perform no normalization to data</span>
+<span class="sd">            - &#39;fwn&#39;: Normalizes each feature independently</span>
+<span class="sd">            - &#39;01scale&#39;: Scales data to 0-1 interval so it set data closer to weights</span>
+<span class="sd">            - &#39;euclidean&#39;: Euclidean Normalization</span>
+<span class="sd">        :param presentation: If set to &#39;sequential&#39; data will be presented sequentially, otherwise it will be presented</span>
+<span class="sd">        randomly</span>
+<span class="sd">        :param weights: Technique used to initialize the weights. Current options include:</span>
+<span class="sd">            - &#39;random&#39;: From 0 to 1</span>
+<span class="sd">            - &#39;random_negative&#39;: From -1 to 1</span>
+<span class="sd">            - &#39;sample&#39;: Takes samples from data. This is useful if data is not normalized</span>
+<span class="sd">            - &#39;PCA&#39;: sequence of vectors taken along a hyperplane spanned by the two largest principal components of the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Checking input parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__trainned</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">assert</span> <span class="n">period</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Period must be a positive value&#39;</span>
+
+        <span class="k">assert</span> <span class="n">initial_lr</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">initial_lr</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Learning rate initial must &#39;</span> \
+                                                 <span class="s1">&#39;be between 0 and 1&#39;</span>
+
+        <span class="k">assert</span> <span class="n">size</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Map size must be a value higher than 1&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">presentation</span> <span class="o">=</span> <span class="n">presentation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span> <span class="o">=</span> <span class="n">initial_lr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_decay</span> <span class="o">=</span> <span class="n">use_decay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="n">period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighbourhood</span> <span class="o">=</span> <span class="n">initial_neighbourhood</span> <span class="k">if</span> <span class="n">initial_neighbourhood</span> <span class="o">!=</span> <span class="mi">0</span> \
+            <span class="k">else</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalization</span> <span class="o">=</span> <span class="n">normalization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">presentation</span> <span class="o">=</span> <span class="n">presentation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_init</span> <span class="o">=</span> <span class="n">weights</span>
+
+        <span class="c1"># Initialize weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Create index matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Map.train">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.train">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Trains the map</span>
+
+<span class="sd">        :param data: numpy array of 2 dimensions. First dimension corresponds to data samples, while the second</span>
+<span class="sd">        represents an specific sample&#39;s data</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># Normalizating input data</span>
+        <span class="n">training_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__normalize</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">normalization</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_weights</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weights_init</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TRAINING...&quot;</span><span class="p">)</span>
+        <span class="c1"># Input patterns</span>
+        <span class="k">for</span> <span class="n">numPresentation</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">presentation</span> <span class="o">==</span> <span class="s1">&#39;sequential&#39;</span><span class="p">:</span>
+                <span class="c1"># Select patterns sequentialy</span>
+                <span class="n">new_pattern</span> <span class="o">=</span> <span class="n">training_data</span><span class="p">[</span><span class="n">numPresentation</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Select patterns randomly</span>
+                <span class="n">new_pattern</span> <span class="o">=</span> <span class="n">training_data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">)]</span>
+
+            <span class="c1"># Getting the winner neuron</span>
+            <span class="n">bmu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_bmu</span><span class="p">(</span><span class="n">new_pattern</span><span class="p">)</span>
+
+            <span class="c1"># Getting learning rate value and current neighbourhood</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variation_learning_rate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span><span class="p">,</span> <span class="n">numPresentation</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">)</span>
+            <span class="n">v_final</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_decay</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variation_neighbourhood</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neighbourhood</span><span class="p">,</span> <span class="n">numPresentation</span><span class="p">,</span>
+                                             <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">,</span> <span class="n">v_final</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__adjust_weights</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">bmu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">new_pattern</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__trainned</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FINISHED.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Map.reinforce">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.reinforce">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reinforce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_data</span><span class="p">,</span>
+                  <span class="n">reinforcement</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                  <span class="n">extension</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                  <span class="n">compression</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reinforce learning</span>
+
+<span class="sd">        :param training_data: numpy array of 2 dimensions. First dimension corresponds to data samples, while the second</span>
+<span class="sd">        represents an specific sample&#39;s data</span>
+<span class="sd">        :param reinforcement: Number of reinforcement iterations</span>
+<span class="sd">        :param extension: WIP</span>
+<span class="sd">        :param compression: WIP</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">origin_initial_lr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span>
+        <span class="c1"># Reinforcement periods</span>
+        <span class="k">for</span> <span class="n">reinforcement_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">reinforcement</span><span class="p">):</span>
+
+            <span class="c1"># Increasing period and compress learning rate(initial)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">*</span> <span class="n">extension</span><span class="p">)</span>
+            <span class="n">reinforcement_lr</span> <span class="o">=</span> <span class="n">origin_initial_lr</span> <span class="o">*</span> <span class="n">compression</span>
+            <span class="n">origin_initial_lr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span>
+
+            <span class="c1"># Training again</span>
+            <span class="k">for</span> <span class="n">numPresentation</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">presentation</span> <span class="o">==</span> <span class="s1">&#39;sequential&#39;</span><span class="p">:</span>
+                    <span class="c1"># Select patterns sequentialy</span>
+                    <span class="n">new_pattern</span> <span class="o">=</span> <span class="n">training_data</span><span class="p">[</span><span class="n">numPresentation</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Select patterns randomly</span>
+                    <span class="n">new_pattern</span> <span class="o">=</span> <span class="n">training_data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">)]</span>
+
+                <span class="c1"># Getting the winner neuron</span>
+                <span class="n">bmu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_bmu</span><span class="p">(</span><span class="n">new_pattern</span><span class="p">)</span>
+
+                <span class="c1"># Getting learning rate value and current neighbourhood</span>
+                <span class="n">eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variation_learning_rate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span><span class="p">,</span> <span class="n">numPresentation</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">)</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__adjust_weights</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">bmu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">new_pattern</span><span class="p">)</span></div>
+
+
+    <span class="c1"># GETTING BMU AND SECOND BMU</span>
+<div class="viewcode-block" id="Map.calculate_bmu">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.calculate_bmu">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_bmu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates Best Machine Unit (BMU) for a concrete pattern.</span>
+<span class="sd">        The bmu is the neuron whose weight vector is closest in the space to the pattern.</span>
+<span class="sd">        It also calculates the second closest neuron, used for metrics calculation on the map</span>
+<span class="sd">        :param pattern: array of the pattern we are comparing</span>
+<span class="sd">        :return:</span>
+<span class="sd">            - bmu: distance of the bmu</span>
+<span class="sd">            - bmu_pos: coordinates of the bmu</span>
+<span class="sd">            - second_bmu: distance of the second bmu</span>
+<span class="sd">            - second_bmu_pos: coordinates of the second bmu</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distancias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">-</span> <span class="n">pattern</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">bmu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">distancias</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">bmu_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">distancias</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span> <span class="n">distancias</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">distancias</span><span class="p">[</span><span class="n">bmu_pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="n">second_bmu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">distancias</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">second_bmu_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">distancias</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span> <span class="n">distancias</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">bmu</span><span class="p">,</span> <span class="n">bmu_pos</span><span class="p">,</span> <span class="n">second_bmu</span><span class="p">,</span> <span class="n">second_bmu_pos</span></div>
+
+
+<div class="viewcode-block" id="Map.calculate_distance">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.calculate_distance">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vector1</span><span class="p">,</span> <span class="n">vector2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function that selects which distance will be calculated between the two input vectors</span>
+<span class="sd">        :param vector1: First vector</span>
+<span class="sd">        :param vector2: Second vector</span>
+<span class="sd">        :return: distance between vector1 and vector2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">==</span> <span class="s1">&#39;chebyshev&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Map</span><span class="o">.</span><span class="n">chebyshev_distance</span><span class="p">(</span><span class="n">vector1</span><span class="p">,</span> <span class="n">vector2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">==</span> <span class="s1">&#39;euclidean&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Map</span><span class="o">.</span><span class="n">vector_distance</span><span class="p">(</span><span class="n">vector1</span><span class="p">,</span> <span class="n">vector2</span><span class="p">)</span></div>
+
+
+    <span class="c1"># VARIATION OF LEARNING RATE</span>
+<div class="viewcode-block" id="Map.variation_learning_rate">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.variation_learning_rate">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">variation_learning_rate</span><span class="p">(</span><span class="n">initial_lr</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">iterations_number</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Funtion to calculate the learning rate for the current iteration relative from the total number of iterations</span>
+
+<span class="sd">        :param initial_lr: initial learning rate</span>
+<span class="sd">        :param i: Current iteration</span>
+<span class="sd">        :param iterations_number: total number of iterations</span>
+<span class="sd">        :return: learning rate for the current iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">initial_lr</span> <span class="o">+</span> <span class="p">((</span><span class="o">-</span><span class="n">initial_lr</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="n">iterations_number</span><span class="p">)</span></div>
+
+
+    <span class="c1"># VARIATION NEIGHBOURHOOD</span>
+<div class="viewcode-block" id="Map.variation_neighbourhood">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.variation_neighbourhood">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">variation_neighbourhood</span><span class="p">(</span><span class="n">initial_neighbourhood</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span>
+                                <span class="n">iterations_number</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to calculate the neighbourhood variation for the current iteration</span>
+
+<span class="sd">        :param initial_neighbourhood: Initial neighbourhood</span>
+<span class="sd">        :param i: Current iteration</span>
+<span class="sd">        :param iterations_number: total number of iterations</span>
+<span class="sd">        :param final: neighbourhood for the last iteration</span>
+<span class="sd">        :return: neighbourhood for the current iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">final</span> <span class="o">+</span> <span class="n">initial_neighbourhood</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">iterations_number</span><span class="p">))</span></div>
+
+
+    <span class="c1"># GETTING DECAY VALUE</span>
+<div class="viewcode-block" id="Map.decay">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.decay">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decay</span><span class="p">(</span><span class="n">distance_BMU</span><span class="p">,</span> <span class="n">current_neighbourhood</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function that calculates decay from the bmu. The closer a neuron is to the bmu, the lower the decay will be</span>
+
+<span class="sd">        :param distance_BMU: Array of the distances to the bmu</span>
+<span class="sd">        :param current_neighbourhood: current neighbourhood</span>
+<span class="sd">        :return: decay array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">distance_BMU</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">current_neighbourhood</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span></div>
+
+
+    <span class="c1"># GETTING DISTANCE BETWEEN VECTORS</span>
+<div class="viewcode-block" id="Map.vector_distance">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.vector_distance">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vector_distance</span><span class="p">(</span><span class="n">vector1</span><span class="p">,</span> <span class="n">vector2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Function that calculates the euclidean distance between vector1 and vector2</span>
+
+<span class="sd">        :param vector1:</span>
+<span class="sd">        :param vector2:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">vector1</span> <span class="o">-</span> <span class="n">vector2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
+
+
+    <span class="c1"># GETTING CHEBYSHEV DISTANCE</span>
+<div class="viewcode-block" id="Map.chebyshev_distance">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.chebyshev_distance">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">chebyshev_distance</span><span class="p">(</span><span class="n">vector1</span><span class="p">,</span> <span class="n">vector2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Function that calculates the chebyshev distance between vector1 and vector2</span>
+
+<span class="sd">        :param vector1:</span>
+<span class="sd">        :param vector2:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vector1</span> <span class="o">-</span> <span class="n">vector2</span><span class="p">))</span></div>
+
+
+    <span class="c1"># def __adjust_weight(self, ):</span>
+
+    <span class="c1"># Function to update weights</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__adjust_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">bmu</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Function that adjust our map&#39;s weigths considering v, eta, bmu and pattern</span>
+
+<span class="sd">        :param v: Neighbourhood variation for current iteration</span>
+<span class="sd">        :param eta: Learning rate variation for current iteration</span>
+<span class="sd">        :param bmu: BMU coordinates from where to calculate distance&#39;s matrix</span>
+<span class="sd">        :param pattern: current iteration pattern that we are checking</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span><span class="p">,</span> <span class="n">bmu</span><span class="p">)</span>
+        <span class="n">to_update</span> <span class="o">=</span> <span class="n">distances</span> <span class="o">&lt;=</span> <span class="n">v</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_decay</span><span class="p">:</span>
+            <span class="n">decay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">decay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">to_update</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">to_update</span><span class="p">]</span> <span class="o">+</span> \
+                                  <span class="n">eta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">decay</span><span class="p">[</span><span class="n">to_update</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> \
+                                  <span class="p">(</span><span class="n">pattern</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">to_update</span><span class="p">])</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__normalize</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function that normalizes data</span>
+
+<span class="sd">        :param data: data to normalize</span>
+<span class="sd">        :param method: method to use. Available options are:</span>
+<span class="sd">            - &#39;none&#39;: Perform no normalization to data</span>
+<span class="sd">            - &#39;fwn&#39;: Normalizes each feature independently</span>
+<span class="sd">            - &#39;01scale&#39;: Scales data to 0-1 interval so it set data closer to weights</span>
+<span class="sd">            - &#39;euclidean&#39;: Euclidean Normalization</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;fwn&#39;</span><span class="p">:</span>
+                <span class="c1"># Feature Wise Normalization</span>
+
+                <span class="n">training_data_temp</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="n">mean</span> <span class="o">=</span> <span class="n">training_data_temp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">training_data_temp</span> <span class="o">=</span> <span class="n">training_data_temp</span> <span class="o">-</span> <span class="n">mean</span>
+                <span class="n">std</span> <span class="o">=</span> <span class="n">training_data_temp</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">training_data_temp</span> <span class="o">/=</span> <span class="n">std</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">training_data_temp</span>
+
+            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;euclidean&#39;</span><span class="p">:</span>
+                <span class="c1"># Euclidean Normalization</span>
+                <span class="n">training_data_temp</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">training_data_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_data_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">temp</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_data_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                        <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">+</span> <span class="n">training_data_temp</span><span class="p">[</span><span class="n">vector</span><span class="p">,</span> <span class="n">component</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                    <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_data_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">vector</span><span class="p">,</span> <span class="n">component</span><span class="p">]</span> <span class="o">=</span> <span class="n">training_data_temp</span><span class="p">[</span><span class="n">vector</span><span class="p">,</span> <span class="n">component</span><span class="p">]</span> \
+                                                  <span class="o">/</span> <span class="n">temp</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;01scale&#39;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Function to initialize the weights matrix</span>
+
+<span class="sd">        :param data: Data used to train the map</span>
+<span class="sd">        :param method: Method to initialize the map. Available options include:</span>
+<span class="sd">            - &#39;random&#39;: From 0 to 1</span>
+<span class="sd">            - &#39;random_negative&#39;: From -1 to 1</span>
+<span class="sd">            - &#39;sample&#39;: Takes samples from data. This is useful if data is not normalized</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
+            <span class="c1"># Getting the weights from random values between 0 and 1</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span> <span class="o">*</span>
+                                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;random_negative&#39;</span><span class="p">:</span>
+            <span class="c1"># Getting the weights from random values between -1 and 1</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span> <span class="o">*</span>
+                                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;sample&#39;</span><span class="p">:</span>
+            <span class="c1"># Getting the weights from the input data (training data)</span>
+            <span class="n">total_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">weights_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_weights</span><span class="p">):</span>
+                <span class="n">weights_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">)][</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">)])</span>
+
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights_list</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;PCA&#39;</span><span class="p">:</span>
+            <span class="n">scaler</span><span class="o">=</span><span class="n">StandardScaler</span><span class="p">()</span>
+            <span class="n">standardized_data</span><span class="o">=</span><span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">pca_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">))</span>
+            <span class="n">pc_length</span><span class="p">,</span> <span class="n">pc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">standardized_data</span><span class="p">)))</span>
+            <span class="n">pc_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">pc_length</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">)):</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">c2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">)):</span>
+                    <span class="n">pca_weights</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">pc</span><span class="p">[:,</span> <span class="n">pc_order</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">pc</span><span class="p">[:,</span> <span class="n">pc_order</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">return</span> <span class="n">pca_weights</span>
+
+    <span class="c1">######################################################</span>
+    <span class="c1">#                    JSON METHODS                    #</span>
+    <span class="c1">######################################################</span>
+
+    <span class="c1"># LOAD CLASSIFIER FROM THE FILE</span>
+<div class="viewcode-block" id="Map.load_classifier">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.load_classifier">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_classifier</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;Model&#39;</span><span class="p">):</span>
+
+        <span class="c1"># Opening the JSON file and getting all the models</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+
+            <span class="c1"># Reading and setting all the attributes</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]:</span>
+                <span class="n">map_size</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;map_size&#39;</span><span class="p">]</span>
+                <span class="n">input_data_dimension</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;input_data_dimension&#39;</span><span class="p">]</span>
+                <span class="n">presentation</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;presentation&#39;</span><span class="p">]</span>
+                <span class="n">initial_lr</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;initial_lr&#39;</span><span class="p">]</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span>
+                <span class="n">use_decay</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;use_decay&#39;</span><span class="p">]</span>
+                <span class="n">num_data</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;num_data&#39;</span><span class="p">]</span>
+                <span class="n">period</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;period&#39;</span><span class="p">]</span>
+                <span class="n">neighbourhood</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;neighbourhood&#39;</span><span class="p">]</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">])</span>
+
+        <span class="n">new_map</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">size</span><span class="o">=</span><span class="n">map_size</span><span class="p">,</span>
+                      <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
+                      <span class="n">initial_lr</span><span class="o">=</span><span class="n">initial_lr</span><span class="p">,</span>
+                      <span class="n">initial_neighbourhood</span><span class="o">=</span><span class="n">neighbourhood</span><span class="p">,</span>
+                      <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
+                      <span class="n">use_decay</span><span class="o">=</span><span class="n">use_decay</span>
+                      <span class="p">)</span>
+
+        <span class="n">new_map</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+        <span class="n">new_map</span><span class="o">.</span><span class="n">input_data_dimension</span> <span class="o">=</span> <span class="n">input_data_dimension</span>
+        <span class="n">new_map</span><span class="o">.</span><span class="n">presentation</span> <span class="o">=</span> <span class="n">presentation</span>
+        <span class="n">new_map</span><span class="o">.</span><span class="n">num_data</span> <span class="o">=</span> <span class="n">num_data</span>
+        <span class="n">new_map</span><span class="o">.</span><span class="n">__trainned</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Showing a message to the user</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Imported successfully&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">new_map</span></div>
+
+
+    <span class="c1"># SAVE CLASSIFIER IN THE FILE</span>
+<div class="viewcode-block" id="Map.save_classifier">
+<a class="viewcode-back" href="../../api.html#GEMA.map.Map.save_classifier">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_classifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;Model&#39;</span><span class="p">):</span>
+        <span class="c1"># Creating the JSON object</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+
+        <span class="c1"># Setting array</span>
+
+        <span class="c1"># Appending the model</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;map_size&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span>
+            <span class="s1">&#39;input_data_dimension&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">,</span>
+            <span class="s1">&#39;presentation&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">presentation</span><span class="p">,</span>
+            <span class="s1">&#39;initial_lr&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span><span class="p">,</span>
+            <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span>
+            <span class="s1">&#39;use_decay&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_decay</span><span class="p">,</span>
+            <span class="s1">&#39;num_data&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">,</span>
+            <span class="s1">&#39;period&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">,</span>
+            <span class="s1">&#39;neighbourhood&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbourhood</span><span class="p">,</span>
+            <span class="s1">&#39;weights&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="p">})</span>
+
+        <span class="c1"># Writing in the file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+
+        <span class="c1"># Showing a message to the user</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saved successfully&#39;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alberto Nogales, Álvaro José García-Tejedor.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
