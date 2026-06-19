@@ -6,6 +6,7 @@ GEMA — Self-Organizing Maps
    :caption: Contents:
 
    installation
+   usage
    api
 
 Indices and tables

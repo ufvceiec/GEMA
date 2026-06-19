@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage Guide &mdash; GEMA 0.4.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5bfaad31"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GEMA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preparing-data">Preparing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-the-som">Training the SOM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#key-parameters">Key parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#classifying-data">Classifying data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-labelled-data">Using labelled data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#quality-metrics">Quality metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#saving-and-loading-a-model">Saving and loading a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualisation">Visualisation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GEMA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Usage Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="usage-guide">
+<h1>Usage Guide<a class="headerlink" href="#usage-guide" title="Link to this heading"></a></h1>
+<p>This page walks through the full GEMA workflow from data preparation to quality evaluation.</p>
+<nav class="contents local" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#preparing-data" id="id1">Preparing data</a></p></li>
+<li><p><a class="reference internal" href="#training-the-som" id="id2">Training the SOM</a></p>
+<ul>
+<li><p><a class="reference internal" href="#key-parameters" id="id3">Key parameters</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#classifying-data" id="id4">Classifying data</a></p>
+<ul>
+<li><p><a class="reference internal" href="#using-labelled-data" id="id5">Using labelled data</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#quality-metrics" id="id6">Quality metrics</a></p></li>
+<li><p><a class="reference internal" href="#saving-and-loading-a-model" id="id7">Saving and loading a model</a></p></li>
+<li><p><a class="reference internal" href="#visualisation" id="id8">Visualisation</a></p></li>
+</ul>
+</nav>
+<hr class="docutils" />
+<section id="preparing-data">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Preparing data</a><a class="headerlink" href="#preparing-data" title="Link to this heading"></a></h2>
+<p>GEMA expects a 2-D <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> where rows are samples and columns are features.
+The library includes built-in normalisation options, but we recommend normalising your data
+beforehand for maximum control.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># Example: three 2-D clusters</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">cluster_a</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">cluster_b</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">cluster_c</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">cluster_a</span><span class="p">,</span> <span class="n">cluster_b</span><span class="p">,</span> <span class="n">cluster_c</span><span class="p">])</span>   <span class="c1"># shape (120, 2)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="training-the-som">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Training the SOM</a><a class="headerlink" href="#training-the-som" title="Link to this heading"></a></h2>
+<p>Pass data directly to <a class="reference internal" href="api.html#GEMA.map.Map" title="GEMA.map.Map"><code class="xref py py-class docutils literal notranslate"><span class="pre">Map</span></code></a> to train in one step:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">GEMA.map</span><span class="w"> </span><span class="kn">import</span> <span class="n">Map</span>
+
+<span class="n">som</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>                   <span class="c1"># 6×6 neuron grid</span>
+    <span class="n">period</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>               <span class="c1"># number of training iterations</span>
+    <span class="n">initial_lr</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>           <span class="c1"># initial learning rate (0–1)</span>
+    <span class="n">normalization</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>     <span class="c1"># &#39;none&#39; | &#39;fwn&#39; | &#39;01scale&#39; | &#39;euclidean&#39;</span>
+    <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>         <span class="c1"># &#39;random&#39; | &#39;random_negative&#39; | &#39;sample&#39; | &#39;PCA&#39;</span>
+    <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>     <span class="c1"># &#39;euclidean&#39; | &#39;chebyshev&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<section id="key-parameters">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Key parameters</a><a class="headerlink" href="#key-parameters" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 60.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">size</span></code></p></td>
+<td><p>Side length of the square map (<code class="docutils literal notranslate"><span class="pre">size</span> <span class="pre">×</span> <span class="pre">size</span></code> neurons)</p></td>
+<td><p>required</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">period</span></code></p></td>
+<td><p>Number of training iterations</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">10</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">initial_lr</span></code></p></td>
+<td><p>Starting learning rate</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.1</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">initial_neighbourhood</span></code></p></td>
+<td><p>Starting neighbourhood radius (defaults to <code class="docutils literal notranslate"><span class="pre">size</span></code>)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">normalization</span></code></p></td>
+<td><p>Built-in data normalisation method</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'none'</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">weights</span></code></p></td>
+<td><p>Weight initialisation strategy</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'random'</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">distance</span></code></p></td>
+<td><p>Distance metric for BMU search</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'euclidean'</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">use_decay</span></code></p></td>
+<td><p>Apply distance-based weight decay</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="classifying-data">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Classifying data</a><a class="headerlink" href="#classifying-data" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="api.html#GEMA.classification.Classification" title="GEMA.classification.Classification"><code class="xref py py-class docutils literal notranslate"><span class="pre">Classification</span></code></a> maps every sample to its Best Matching Unit (BMU)
+and computes quality metrics:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">GEMA.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">Classification</span>
+
+<span class="n">clf</span> <span class="o">=</span> <span class="n">Classification</span><span class="p">(</span><span class="n">som</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Active neurons    : </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">num_activations</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="n">som</span><span class="o">.</span><span class="n">map_size</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Quantization error: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">quantization_error</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Topological error : </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">topological_error</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">activations_map</span><span class="p">)</span>       <span class="c1"># count of patterns per neuron</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">classification_map</span><span class="p">)</span>    <span class="c1"># DataFrame: label, x, y, dist per sample</span>
+</pre></div>
+</div>
+<section id="using-labelled-data">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Using labelled data</a><a class="headerlink" href="#using-labelled-data" title="Link to this heading"></a></h3>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">tagged=True</span></code> when the first column of your array holds sample labels:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">tagged_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">labels</span><span class="p">,</span> <span class="n">data</span><span class="p">])</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">Classification</span><span class="p">(</span><span class="n">som</span><span class="p">,</span> <span class="n">tagged_data</span><span class="p">,</span> <span class="n">tagged</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="quality-metrics">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Quality metrics</a><a class="headerlink" href="#quality-metrics" title="Link to this heading"></a></h2>
+<p>After classification the following attributes are available on the
+<a class="reference internal" href="api.html#GEMA.classification.Classification" title="GEMA.classification.Classification"><code class="xref py py-class docutils literal notranslate"><span class="pre">Classification</span></code></a> object:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">quantization_error</span></code></p></td>
+<td><p>Mean distance between each sample and its BMU</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">topological_error</span></code></p></td>
+<td><p>Fraction of samples whose 2nd BMU is non-adjacent to the 1st</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">activations_map</span></code></p></td>
+<td><p>2-D array counting how many samples mapped to each neuron</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">distances_map</span></code></p></td>
+<td><p>2-D array of cumulative BMU distances per neuron</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">umatriz</span></code></p></td>
+<td><p>Unified distance matrix (U-matrix) for cluster boundary visualisation</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="saving-and-loading-a-model">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Saving and loading a model</a><a class="headerlink" href="#saving-and-loading-a-model" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save</span>
+<span class="n">som</span><span class="o">.</span><span class="n">save_classifier</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;my_model&#39;</span><span class="p">)</span>   <span class="c1"># writes my_model.json</span>
+
+<span class="c1"># Load</span>
+<span class="n">loaded</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">load_classifier</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;my_model&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="visualisation">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Visualisation</a><a class="headerlink" href="#visualisation" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Most visualisation methods use <a class="reference external" href="https://plotly.com/python/">Plotly</a> and are
+designed to run inside Jupyter notebooks.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">GEMA.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">Visualization</span>
+
+<span class="c1"># Heat map of BMU activations</span>
+<span class="n">Visualization</span><span class="o">.</span><span class="n">heat_map</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">)</span>
+
+<span class="c1"># 3-D elevation map</span>
+<span class="n">Visualization</span><span class="o">.</span><span class="n">elevation_map</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
+
+<span class="c1"># U-matrix (matplotlib)</span>
+<span class="n">Visualization</span><span class="o">.</span><span class="n">umatrix</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span>
+
+<span class="c1"># Weight profile for neuron at (row=2, col=3)</span>
+<span class="n">Visualization</span><span class="o">.</span><span class="n">characteristics_graph</span><span class="p">(</span><span class="n">som</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Bar chart of activations distribution</span>
+<span class="n">Visualization</span><span class="o">.</span><span class="n">neurons_per_num_activations_map</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alberto Nogales, Álvaro José García-Tejedor.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
