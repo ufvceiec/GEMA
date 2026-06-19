@@ -2,10 +2,15 @@ import numpy as np
 import plotly
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
-from IPython.display import display
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from plotly.offline import init_notebook_mode, iplot, plot
+
+try:
+    from IPython.display import display
+except ImportError:
+    def display(*args, **kwargs):  # type: ignore[misc]
+        pass  # no-op outside Jupyter
 
 
 class Visualization:
