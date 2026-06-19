@@ -69,9 +69,9 @@ class Classification:
             self.activations_map[bmu_pos] += 1
             self.distances_map[bmu_pos] += distance
 
-            self.classification_map['x'][pattern] = bmu_pos[0]
-            self.classification_map['y'][pattern] = bmu_pos[1]
-            self.classification_map['dist'][pattern] = distance
+            self.classification_map.loc[pattern, 'x']    = bmu_pos[0]
+            self.classification_map.loc[pattern, 'y']    = bmu_pos[1]
+            self.classification_map.loc[pattern, 'dist'] = distance
 
         # Number of neurons that have identified pattern
         self.num_activations = np.count_nonzero(self.activations_map != 0)
