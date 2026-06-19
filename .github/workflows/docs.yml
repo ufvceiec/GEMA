@@ -3,6 +3,7 @@ name: Docs
 on:
   push:
     branches: [master]
+  workflow_dispatch:   # allow manual trigger from the Actions tab
 
 permissions:
   contents: read
@@ -24,7 +25,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install GEMA and Sphinx dependencies
         run: |
           pip install -e .
           pip install -r docs/requirements.txt
