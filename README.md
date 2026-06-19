@@ -225,6 +225,22 @@ pip install -r requirements.txt
 
 ---
 
+## Comparison with other SOM libraries
+
+Training time across three dataset sizes (best of 3 runs, single CPU core):
+
+| Library | Small (500×4, 5×5, 1 k iter) | Medium (2 000×10, 8×8, 5 k iter) | Large (5 000×20, 10×10, 10 k iter) |
+|:---|:---:|:---:|:---:|
+| **GEMA** | 0.044 s | 0.220 s | 0.454 s |
+| **MiniSom** | 0.017 s | 0.096 s | 0.229 s |
+| **sklearn-som** | 0.061 s | 0.384 s | 0.728 s |
+
+_GEMA and MiniSom both use an online (one-sample-per-step) update rule.
+sklearn-som uses full-batch epochs, so the iteration count is converted to
+epochs = iterations / N. Measured on Apple M-series; lower is better._
+
+---
+
 ## Contributing
 
 1. Fork the repository and create a feature branch.
