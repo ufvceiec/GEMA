@@ -5,6 +5,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5.0] — 2026-06-19
+
+### Added
+
+- **GitHub Actions CI** — automated test suite runs on Python 3.10 and 3.11 on every push and pull request.
+- **Sphinx documentation** — full API docs built with `sphinx_rtd_theme`; automatically deployed to GitHub Pages via `peaceiris/actions-gh-pages`.
+- **Test suite** (`tests/test_gema.py`) — 51 unit tests covering `Map`, `Classification`, all normalization methods, weight initializations, save/load, and distance metrics.
+- **`CITATION.cff`** — machine-readable citation metadata for GitHub's "Cite this repository" button (García-Tejedor & Nogales, *Software Impacts* 2022, DOI `10.1016/j.simpa.2022.100280`).
+- **Benchmark table** in README — wall-clock timing comparison of GEMA, MiniSom, and sklearn-som on small/medium/large datasets.
+
+### Fixed
+
+- **`classification.py`** — replaced deprecated chained assignment (`df['col'][row] = val`) with `.loc[row, 'col'] = val` to prevent `ChainedAssignmentError` under pandas 2.0+.
+- **`visualization.py`** — made `IPython.display` import optional with a no-op fallback so GEMA works outside Jupyter notebooks without raising `ModuleNotFoundError`.
+
+---
+
+# Previous changelog
+
+All notable changes to GEMA are documented here.  
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
 ## [0.4.3] — 2026-06-12
 
 ### Fixed
