@@ -128,50 +128,61 @@
 <span id="gema-map"></span><h2>GEMA.map<a class="headerlink" href="#module-GEMA.map" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="GEMA.map.Map">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">GEMA.map.</span></span><span class="sig-name descname"><span class="pre">Map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_neighbourhood</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">presentation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rectangular'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">GEMA.map.</span></span><span class="sig-name descname"><span class="pre">Map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_neighbourhood</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">presentation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rectangular'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Map class is the main component of GEMA. It contains the classifying map that allows for classification and
-is subject of analysis in search of data information</p>
+<p>Map class is the main component of GEMA. It contains the classifying map
+that allows for classification and is subject of analysis in search of data
+information.</p>
+<p>Training can be accelerated in two independent ways:</p>
+<ul class="simple">
+<li><p><strong>CPU / numba</strong> (<code class="docutils literal notranslate"><span class="pre">device='cpu'</span></code>, numba installed): the BMU search and
+weight-update kernels are compiled to native machine code and run in
+parallel across all CPU cores via <code class="docutils literal notranslate"><span class="pre">numba.prange</span></code>.</p></li>
+<li><p><strong>GPU / CuPy</strong> (<code class="docutils literal notranslate"><span class="pre">device='gpu'</span></code>, CuPy installed and a CUDA GPU present):
+the weight tensor and training data are transferred to the GPU once at the
+start of training.  All inner-loop operations (BMU search, neighbourhood
+distances, weight update) run as native CUDA kernels via CuPy.  The
+finished weight tensor is copied back to CPU automatically so that
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Classification</span></code>, <a class="reference internal" href="#GEMA.map.Map.save_classifier" title="GEMA.map.Map.save_classifier"><code class="xref py py-meth docutils literal notranslate"><span class="pre">save_classifier()</span></code></a>, and all
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Visualization</span></code> methods work without any changes.</p></li>
+</ul>
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.calculate_bmu">
 <span class="sig-name descname"><span class="pre">calculate_bmu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.calculate_bmu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.calculate_bmu" title="Link to this definition"></a></dt>
-<dd><p>Calculates Best Machine Unit (BMU) for a concrete pattern.
-The bmu is the neuron whose weight vector is closest in the space to the pattern.
-It also calculates the second closest neuron, used for metrics calculation on the map
-:param pattern: array of the pattern we are comparing
-:return:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>bmu: distance of the bmu</p></li>
-<li><p>bmu_pos: coordinates of the bmu</p></li>
-<li><p>second_bmu: distance of the second bmu</p></li>
-<li><p>second_bmu_pos: coordinates of the second bmu</p></li>
-</ul>
-</div></blockquote>
+<dd><p>Return the BMU and second-BMU for <em>pattern</em>.</p>
+<p>Always operates on CPU (weights are stored as numpy after training),
+so this method works identically regardless of the <code class="docutils literal notranslate"><span class="pre">device</span></code> used for
+training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pattern</strong> – 1-D array of length D.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(bmu_dist,</span> <span class="pre">bmu_pos,</span> <span class="pre">second_bmu_dist,</span> <span class="pre">second_bmu_pos)</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.calculate_distance">
 <span class="sig-name descname"><span class="pre">calculate_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.calculate_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.calculate_distance" title="Link to this definition"></a></dt>
-<dd><p>Function that selects which distance will be calculated between the two input vectors
-:param vector1: First vector
-:param vector2: Second vector
-:return: distance between vector1 and vector2</p>
+<dd><p>Dispatch to the configured distance metric.</p>
+<p>Works with both numpy and cupy arrays (device-agnostic).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.chebyshev_distance">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">chebyshev_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.chebyshev_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.chebyshev_distance" title="Link to this definition"></a></dt>
-<dd><p>Function that calculates the chebyshev distance between vector1 and vector2</p>
+<dd><p>Chebyshev (L∞) distance. Works with numpy and cupy arrays.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>vector1</strong></p></li>
-<li><p><strong>vector2</strong></p></li>
+<li><p><strong>vector1</strong> – First vector or array of vectors.</p></li>
+<li><p><strong>vector2</strong> – Second vector or array of vectors (same shape).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>Scalar or array of distances.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -179,16 +190,17 @@ It also calculates the second closest neuron, used for metrics calculation on th
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.decay">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">decay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance_BMU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_neighbourhood</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.decay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.decay" title="Link to this definition"></a></dt>
-<dd><p>Function that calculates decay from the bmu. The closer a neuron is to the bmu, the lower the decay will be</p>
+<dd><p>Gaussian decay kernel.</p>
+<p>Works with both numpy and cupy arrays.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>distance_BMU</strong> – Array of the distances to the bmu</p></li>
-<li><p><strong>current_neighbourhood</strong> – current neighbourhood</p></li>
+<li><p><strong>distance_BMU</strong> – Array of distances to the BMU.</p></li>
+<li><p><strong>current_neighbourhood</strong> – Current neighbourhood radius.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>decay array</p>
+<dd class="field-even"><p>Decay multiplier array (same shape as <em>distance_BMU</em>).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -196,56 +208,70 @@ It also calculates the second closest neuron, used for metrics calculation on th
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.load_classifier">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">load_classifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Model'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.load_classifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.load_classifier" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Load a previously saved SOM from a JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> – Path without <code class="docutils literal notranslate"><span class="pre">.json</span></code> extension.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A fully initialised <a class="reference internal" href="#GEMA.map.Map" title="GEMA.map.Map"><code class="xref py py-class docutils literal notranslate"><span class="pre">Map</span></code></a> instance (on CPU).</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.reinforce">
 <span class="sig-name descname"><span class="pre">reinforce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reinforcement</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.reinforce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.reinforce" title="Link to this definition"></a></dt>
-<dd><p>Reinforce learning</p>
+<dd><p>Fine-tune the map with additional training at a compressed learning rate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>training_data</strong> – numpy array of 2 dimensions. First dimension corresponds to data samples, while the second</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training_data</strong> – numpy array (N × D).</p></li>
+<li><p><strong>reinforcement</strong> – Number of reinforcement rounds.</p></li>
+<li><p><strong>extension</strong> – Multiplier applied to <code class="docutils literal notranslate"><span class="pre">period</span></code> each round (&gt; 1 extends).</p></li>
+<li><p><strong>compression</strong> – Multiplier applied to the learning rate each round
+(&lt; 1 shrinks it, e.g. 0.5 halves it every round).</p></li>
+</ul>
 </dd>
 </dl>
-<p>represents an specific sample’s data
-:param reinforcement: Number of reinforcement iterations
-:param extension: Multiplier applied to the current period each reinforcement round (&gt;1 extends training).
-:param compression: Multiplier applied to the learning rate each reinforcement round (&lt;1 shrinks it).
-:return:</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.save_classifier">
 <span class="sig-name descname"><span class="pre">save_classifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Model'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.save_classifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.save_classifier" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Save the trained SOM to a JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> – Path without <code class="docutils literal notranslate"><span class="pre">.json</span></code> extension.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.train" title="Link to this definition"></a></dt>
-<dd><p>Trains the map</p>
+<dd><p>Train the SOM on <em>data</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> – numpy array of 2 dimensions. First dimension corresponds to data samples, while the second</p>
+<dd class="field-odd"><p><strong>data</strong> – numpy array (N × D).</p>
 </dd>
 </dl>
-<p>represents an specific sample’s data
-:return:</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.variation_learning_rate">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">variation_learning_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_lr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations_number</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.variation_learning_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.variation_learning_rate" title="Link to this definition"></a></dt>
-<dd><p>Funtion to calculate the learning rate for the current iteration relative from the total number of iterations</p>
+<dd><p>Linear decay of the learning rate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>initial_lr</strong> – initial learning rate</p></li>
-<li><p><strong>i</strong> – Current iteration</p></li>
-<li><p><strong>iterations_number</strong> – total number of iterations</p></li>
+<li><p><strong>initial_lr</strong> – Initial learning rate.</p></li>
+<li><p><strong>i</strong> – Current iteration (1-based).</p></li>
+<li><p><strong>iterations_number</strong> – Total number of iterations.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>learning rate for the current iteration</p>
+<dd class="field-even"><p>Learning rate for iteration <em>i</em>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -253,18 +279,18 @@ It also calculates the second closest neuron, used for metrics calculation on th
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.variation_neighbourhood">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">variation_neighbourhood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_neighbourhood</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.variation_neighbourhood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.variation_neighbourhood" title="Link to this definition"></a></dt>
-<dd><p>Function to calculate the neighbourhood variation for the current iteration</p>
+<dd><p>Linear decay of the neighbourhood radius.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>initial_neighbourhood</strong> – Initial neighbourhood</p></li>
-<li><p><strong>i</strong> – Current iteration</p></li>
-<li><p><strong>iterations_number</strong> – total number of iterations</p></li>
-<li><p><strong>final</strong> – neighbourhood for the last iteration</p></li>
+<li><p><strong>initial_neighbourhood</strong> – Initial neighbourhood radius.</p></li>
+<li><p><strong>i</strong> – Current iteration (1-based).</p></li>
+<li><p><strong>iterations_number</strong> – Total number of iterations.</p></li>
+<li><p><strong>final</strong> – Neighbourhood radius at the last iteration.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>neighbourhood for the current iteration</p>
+<dd class="field-even"><p>Neighbourhood radius for iteration <em>i</em>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -272,16 +298,16 @@ It also calculates the second closest neuron, used for metrics calculation on th
 <dl class="py method">
 <dt class="sig sig-object py" id="GEMA.map.Map.vector_distance">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">vector_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/GEMA/map.html#Map.vector_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#GEMA.map.Map.vector_distance" title="Link to this definition"></a></dt>
-<dd><p>Function that calculates the euclidean distance between vector1 and vector2</p>
+<dd><p>Euclidean (L2) distance. Works with numpy and cupy arrays.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>vector1</strong></p></li>
-<li><p><strong>vector2</strong></p></li>
+<li><p><strong>vector1</strong> – First vector or array of vectors.</p></li>
+<li><p><strong>vector2</strong> – Second vector or array of vectors (same shape).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>Scalar or array of distances.</p>
 </dd>
 </dl>
 </dd></dl>
