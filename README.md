@@ -20,6 +20,7 @@
 - [API Reference](#api-reference)
   - [Map](#map)
   - [Classification](#classification)
+  - [IterativeSOM](#iterativesom)
   - [Visualization](#visualization)
 - [Normalization Options](#normalization-options)
 - [Weight Initialization Options](#weight-initialization-options)
@@ -33,16 +34,18 @@
 ## Features
 
 - Train a SOM from scratch with a single call
+- **Rectangular and hexagonal grid topologies**
 - Sequential or random data presentation
 - Euclidean and Chebyshev distance metrics
 - Neighbourhood decay
-- Four normalization strategies (none, FWN, 0-1 scale, Euclidean)
+- Four normalization strategies (none, FWN, 0-1 scale, Euclidean — fully vectorised)
 - Four weight-initialization strategies (random, random\_negative, sample, PCA)
 - Save / load trained models as JSON
 - Classification with topological and quantization error metrics
 - U-matrix computation
 - Interactive Plotly visualisations (heat map, elevation map, codebook vectors)
 - Static Matplotlib visualisations (characteristics graph, bar graph, full weight map)
+- **`IterativeSOM`** — automatically explores a range of map sizes and picks the best
 
 ---
 
@@ -108,7 +111,7 @@ som = Map.load_classifier('my_model')
 ```python
 Map(data=None, size, period, initial_lr, initial_neighbourhood=0,
     distance='euclidean', use_decay=False, normalization='none',
-    presentation='random', weights='random')
+    presentation='random', weights='random', topology='rectangular')
 ```
 
 | Parameter | Type | Default | Description |
@@ -123,16 +126,30 @@ Map(data=None, size, period, initial_lr, initial_neighbourhood=0,
 | `normalization` | `str` | `'none'` | Input normalization strategy (see [Normalization Options](#normalization-options)). |
 | `presentation` | `str` | `'random'` | Data presentation order: `'random'` or `'sequential'`. |
 | `weights` | `str` | `'random'` | Weight initialization method (see [Weight Initialization Options](#weight-initialization-options)). |
+| `topology` | `str` | `'rectangular'` | Grid layout: `'rectangular'` (default) or `'hexagonal'`. Hexagonal grids give each neuron 6 equidistant neighbours, producing more uniform cluster boundaries. |
 
 **Key methods:**
 
 | Method | Description |
 |---|---|
 | `train(data)` | Train the map on `data`. |
-| `reinforce(data, reinforcement, extension, compression)` | Continue training with compressed learning rate. |
+| `reinforce(data, reinforcement, extension, compression)` | Continue training with a compressed learning rate for fine-tuning. |
 | `calculate_bmu(pattern)` | Return BMU distance, position, second-BMU distance and position. |
 | `save_classifier(filename)` | Save the trained model to `<filename>.json`. |
 | `Map.load_classifier(filename)` | Class method — load a model from `<filename>.json`. |
+
+#### Hexagonal topology example
+
+```python
+som = Map(
+    data=data,
+    size=10,
+    period=5000,
+    initial_lr=0.1,
+    topology='hexagonal',   # ← hex grid
+    weights='PCA',
+)
+```
 
 ---
 
@@ -160,6 +177,43 @@ Classification(som, classification_data, other=None, tagged=False, verbose=1)
 | `quantization_error` | Mean distance between each sample and its BMU. |
 | `classification_map` | Pandas DataFrame with label, coordinates and distance for each sample. |
 | `umatriz` | U-matrix (unified distance matrix). |
+
+---
+
+### IterativeSOM
+
+Trains a family of SOMs of different sizes and selects the one with the lowest quantization error.
+
+```python
+from GEMA import IterativeSOM
+
+isom = IterativeSOM(
+    data=data,
+    period=2000,
+    initial_lr=0.1,
+    range_from=np.array([5, 15]),  # explore sizes 5×5 → 15×15
+    try_best=True,                 # evaluate and pick the best
+)
+
+best = isom.get_best_map()         # Map instance with lowest error
+print(isom.get_scores())           # {size: quantization_error, ...}
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `data` | `np.ndarray` (N×D) | — | Training data. |
+| `period` | `int` | — | Training iterations per map. |
+| `initial_lr` | `float` | — | Initial learning rate. |
+| `range_from` | `np.ndarray` `[min, max]` | `[0, 0]` | Size range to explore. When `[0, 0]` a range is derived automatically from the dataset size. |
+| `try_best` | `bool` | `False` | Evaluate every map and store the best. |
+| `give_best` | `bool` | `False` | Alias for `try_best`. |
+| `**map_kwargs` | — | — | Any extra arguments forwarded to each `Map()` call (`topology`, `distance`, etc.). |
+
+| Method | Description |
+|---|---|
+| `get_best_map()` | Return the `Map` with the lowest quantization error (`None` if `try_best` was not set). |
+| `get_scores()` | Return `{size: quantization_error}` dict. |
+| `IterativeSOM.calculate_range(data)` | Static method — compute a sensible `[min, max]` size range from the data. |
 
 ---
 

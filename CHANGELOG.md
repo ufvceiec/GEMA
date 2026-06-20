@@ -5,6 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5.1] — 2026-06-21
+
+### Added
+
+- **Hexagonal topology** (`topology='hexagonal'` in `Map`) — neurons are placed on an offset hex lattice where every neuron has 6 equidistant neighbours, giving smoother and more uniform cluster boundaries than a rectangular grid.  The `topology` parameter is persisted in `save_classifier` / `load_classifier` (backwards-compatible: old JSON files default to `'rectangular'`).
+- **`IterativeSOM` fully implemented** — `calculate_range()` now derives a sensible `[min_size, max_size]` range automatically from the dataset size using the heuristic `centre = sqrt(5 * sqrt(N))`.  The constructor trains one `Map` per size, optionally evaluates each with `Classification` (quantization error), stores the scores in `self.scores`, and exposes the best map via `get_best_map()`.  Added `get_scores()` helper and forwarding of arbitrary `**map_kwargs` to each `Map`.
+
+### Changed
+
+- **Euclidean normalisation vectorised** — `__normalize(method='euclidean')` replaced nested Python loops with `np.linalg.norm(axis=1, keepdims=True)` division; zero-norm rows are left unchanged. Delivers the same result with a fraction of the runtime.
+- **`'sample'` weight init vectorised** — replaced the scalar loop with a single `np.random.randint` call that produces all indices at once; weights are drawn as whole sample vectors rather than individual scalar components, which is both faster and statistically sounder.
+- **`reinforce()` learning rate bug fixed** — `origin_initial_lr` was reset to `self.initial_lr` (the original value) instead of the compressed value each round, meaning the compression had no cumulative effect. Fixed to accumulate correctly and update `self.initial_lr`.
+- **`__adjust_weights` hex-aware** — BMU position is now looked up in `__ids_matrix` before computing neighbourhood distances, so hex and rectangular grids both use their correct 2-D positions.
+
+---
+
 ## [0.5.0] — 2026-06-19
 
 ### Added

@@ -19,7 +19,8 @@ class Map:
                  use_decay=False,
                  normalization='none',
                  presentation='random',
-                 weights='random'):
+                 weights='random',
+                 topology='rectangular'):
         """Initializing the map requires some information provided
 
         :param data: numpy array of 2 dimensions. First dimension corresponds to data samples, while the second
@@ -47,6 +48,9 @@ class Map:
             - 'random_negative': From -1 to 1
             - 'sample': Takes samples from data. This is useful if data is not normalized
             - 'PCA': sequence of vectors taken along a hyperplane spanned by the two largest principal components of the dataset.
+        :param topology: Grid topology to use. Options:
+            - 'rectangular': standard square grid (default)
+            - 'hexagonal': offset hexagonal grid — produces rounder, more uniform neighbourhoods
         """
 
         # Checking input parameters
@@ -57,6 +61,9 @@ class Map:
                                                  'be between 0 and 1'
 
         assert size >= 2, 'Map size must be a value higher than 1'
+
+        assert topology in ('rectangular', 'hexagonal'), \
+            "topology must be 'rectangular' or 'hexagonal'"
 
         self.map_size = size
         self.presentation = presentation
@@ -71,21 +78,49 @@ class Map:
         self.normalization = normalization
         self.presentation = presentation
         self.weights_init = weights
+        self.topology = topology
 
         # Initialize weights
         self.weights = np.random.random(1)
 
-        # Create index matrix
-        self.__ids_matrix = []
-        for y in range(self.map_size):
-            row = []
-            for x in range(self.map_size):
-                row.append([y, x])
-            self.__ids_matrix.append(row)
-        self.__ids_matrix = np.array(self.__ids_matrix)
+        # Create neuron position matrix used for neighbourhood calculations.
+        # For rectangular topology each neuron sits at integer grid coordinates [y, x].
+        # For hexagonal topology every other row is offset by 0.5 in x and all rows
+        # are spaced sqrt(3)/2 apart in y, giving a proper hex lattice.
+        self.__ids_matrix = self.__build_ids_matrix()
 
         if data is not None:
             self.train(data)
+
+    # ------------------------------------------------------------------
+    # GRID HELPERS
+    # ------------------------------------------------------------------
+
+    def __build_ids_matrix(self):
+        """Build the (map_size, map_size, 2) array of neuron 2-D positions."""
+        if self.topology == 'rectangular':
+            ids = []
+            for y in range(self.map_size):
+                row = []
+                for x in range(self.map_size):
+                    row.append([float(y), float(x)])
+                ids.append(row)
+            return np.array(ids)          # shape (size, size, 2)
+
+        else:  # hexagonal
+            # Offset-coordinate hex grid.
+            # Odd rows (0-indexed) are shifted right by 0.5.
+            # Vertical spacing = sqrt(3)/2 ≈ 0.866 so that
+            # all six nearest neighbours are equidistant.
+            sqrt3_2 = np.sqrt(3) / 2
+            ids = []
+            for y in range(self.map_size):
+                row = []
+                x_offset = 0.5 if (y % 2 == 1) else 0.0
+                for x in range(self.map_size):
+                    row.append([y * sqrt3_2, x + x_offset])
+                ids.append(row)
+            return np.array(ids)          # shape (size, size, 2)
 
     def train(self,
               data):
@@ -134,8 +169,8 @@ class Map:
         :param training_data: numpy array of 2 dimensions. First dimension corresponds to data samples, while the second
         represents an specific sample's data
         :param reinforcement: Number of reinforcement iterations
-        :param extension: WIP
-        :param compression: WIP
+        :param extension: Multiplier applied to the current period each reinforcement round (>1 extends training).
+        :param compression: Multiplier applied to the learning rate each reinforcement round (<1 shrinks it).
         :return:
         """
         origin_initial_lr = self.initial_lr
@@ -145,7 +180,8 @@ class Map:
             # Increasing period and compress learning rate(initial)
             self.period = int(self.period * extension)
             reinforcement_lr = origin_initial_lr * compression
-            origin_initial_lr = self.initial_lr
+            origin_initial_lr = reinforcement_lr
+            self.initial_lr = reinforcement_lr
 
             # Training again
             for numPresentation in tqdm(range(1, self.period + 1)):
@@ -259,8 +295,6 @@ class Map:
         """
         return np.max(np.abs(vector1 - vector2))
 
-    # def __adjust_weight(self, ):
-
     # Function to update weights
     def __adjust_weights(self, v, eta, bmu, pattern):
         """ Function that adjust our map's weigths considering v, eta, bmu and pattern
@@ -271,7 +305,10 @@ class Map:
         :param pattern: current iteration pattern that we are checking
         :return:
         """
-        distances = self.calculate_distance(self.__ids_matrix, bmu)
+        # For hexagonal topology the bmu index must be converted to its
+        # actual 2-D position in the hex lattice before computing distances.
+        bmu_pos_2d = self.__ids_matrix[bmu[0], bmu[1]]
+        distances = self.calculate_distance(self.__ids_matrix, bmu_pos_2d)
         to_update = distances <= v
 
         if self.use_decay:
@@ -292,13 +329,13 @@ class Map:
             - 'none': Perform no normalization to data
             - 'fwn': Normalizes each feature independently
             - '01scale': Scales data to 0-1 interval so it set data closer to weights
-            - 'euclidean': Euclidean Normalization
+            - 'euclidean': Euclidean (L2) normalization — each sample vector is divided
+              by its L2 norm so that all samples lie on the unit hypersphere.
         :return:
         """
         if method != 'none':
             if method == 'fwn':
                 # Feature Wise Normalization
-
                 training_data_temp = data
                 mean = training_data_temp.mean(axis=0)
                 training_data_temp = training_data_temp - mean
@@ -307,18 +344,12 @@ class Map:
                 data = training_data_temp
 
             if method == 'euclidean':
-                # Euclidean Normalization
-                training_data_temp = data
-                data = np.empty(training_data_temp.shape, dtype=float)
-                for vector in range(training_data_temp.shape[0]):
-                    temp = 0
-                    for component in range(training_data_temp.shape[1]):
-                        temp = temp + training_data_temp[vector, component] ** 2
-                    temp = np.sqrt(temp)
+                # Vectorised L2 normalisation: divide every row by its own norm.
+                # Rows with zero norm are left as-is to avoid division by zero.
+                norms = np.linalg.norm(data, axis=1, keepdims=True)
+                norms = np.where(norms == 0, 1.0, norms)
+                data = data / norms
 
-                    for component in range(training_data_temp.shape[1]):
-                        data[vector, component] = training_data_temp[vector, component] \
-                                                  / temp
             if method == '01scale':
                 data = (data - np.min(data)) / (np.max(data) - np.min(data))
         return data
@@ -331,6 +362,7 @@ class Map:
             - 'random': From 0 to 1
             - 'random_negative': From -1 to 1
             - 'sample': Takes samples from data. This is useful if data is not normalized
+            - 'PCA': sequence of vectors taken along a hyperplane spanned by the two largest principal components of the dataset.
         :return:
         """
         if method == 'random':
@@ -347,20 +379,13 @@ class Map:
 
         elif method == 'sample':
             # Getting the weights from the input data (training data)
-            total_weights = self.input_data_dimension * (self.map_size ** 2)
-            weights_list = []
-
-            for i in range(total_weights):
-                weights_list.append(
-                    data[np.random.randint(0, self.num_data)][
-                        np.random.randint(0, self.input_data_dimension)])
-
-            return np.array(weights_list).reshape((self.map_size, self.map_size,
-                                                   self.input_data_dimension))
+            idx = np.random.randint(0, self.num_data,
+                                    size=(self.map_size, self.map_size))
+            return data[idx]   # shape (size, size, input_data_dimension)
 
         elif method == 'PCA':
-            scaler=StandardScaler()
-            standardized_data=scaler.fit_transform(data)
+            scaler = StandardScaler()
+            standardized_data = scaler.fit_transform(data)
             pca_weights = np.zeros((self.map_size, self.map_size, self.input_data_dimension))
             pc_length, pc = np.linalg.eig(np.cov(np.transpose(standardized_data)))
             pc_order = np.argsort(-pc_length)
@@ -392,6 +417,7 @@ class Map:
                 num_data = model['num_data']
                 period = model['period']
                 neighbourhood = model['neighbourhood']
+                topology = model.get('topology', 'rectangular')   # backwards-compatible
                 weights = np.array(model['weights'])
 
         new_map = Map(data=None,
@@ -400,7 +426,8 @@ class Map:
                       initial_lr=initial_lr,
                       initial_neighbourhood=neighbourhood,
                       distance=distance,
-                      use_decay=use_decay
+                      use_decay=use_decay,
+                      topology=topology,
                       )
 
         new_map.weights = weights
@@ -418,8 +445,6 @@ class Map:
         # Creating the JSON object
         data = {'model': []}
 
-        # Setting array
-
         # Appending the model
         data['model'].append({
             'map_size': self.map_size,
@@ -431,6 +456,7 @@ class Map:
             'num_data': self.num_data,
             'period': self.period,
             'neighbourhood': self.neighbourhood,
+            'topology': self.topology,
             'weights': self.weights.tolist()
         })
 
