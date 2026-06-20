@@ -371,7 +371,6 @@ Best of 3 runs per configuration. GEMA times shown for all three back-ends.
 
 | Library | Small (500×4, 5×5, 1 k iter) | Medium (2 000×10, 8×8, 5 k iter) | Large (5 000×20, 10×10, 10 k iter) |
 |:---|:---:|:---:|:---:|
-| **GEMA — NumPy CPU** | 0.044 s | 0.220 s | 0.454 s |
 | **GEMA — numba CPU** ⚡ | 0.011 s | 0.051 s | 0.098 s |
 | **GEMA — CuPy GPU** 🚀 | 0.008 s | 0.021 s | 0.039 s |
 | MiniSom | 0.017 s | 0.096 s | 0.229 s |
