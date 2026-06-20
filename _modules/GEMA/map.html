@@ -94,7 +94,8 @@
                  <span class="n">use_decay</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">normalization</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
                  <span class="n">presentation</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span>
-                 <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">):</span>
+                 <span class="n">weights</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">,</span>
+                 <span class="n">topology</span><span class="o">=</span><span class="s1">&#39;rectangular&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializing the map requires some information provided</span>
 
 <span class="sd">        :param data: numpy array of 2 dimensions. First dimension corresponds to data samples, while the second</span>
@@ -122,6 +123,9 @@
 <span class="sd">            - &#39;random_negative&#39;: From -1 to 1</span>
 <span class="sd">            - &#39;sample&#39;: Takes samples from data. This is useful if data is not normalized</span>
 <span class="sd">            - &#39;PCA&#39;: sequence of vectors taken along a hyperplane spanned by the two largest principal components of the dataset.</span>
+<span class="sd">        :param topology: Grid topology to use. Options:</span>
+<span class="sd">            - &#39;rectangular&#39;: standard square grid (default)</span>
+<span class="sd">            - &#39;hexagonal&#39;: offset hexagonal grid — produces rounder, more uniform neighbourhoods</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Checking input parameters</span>
@@ -132,6 +136,9 @@
                                                  <span class="s1">&#39;be between 0 and 1&#39;</span>
 
         <span class="k">assert</span> <span class="n">size</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Map size must be a value higher than 1&#39;</span>
+
+        <span class="k">assert</span> <span class="n">topology</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;rectangular&#39;</span><span class="p">,</span> <span class="s1">&#39;hexagonal&#39;</span><span class="p">),</span> \
+            <span class="s2">&quot;topology must be &#39;rectangular&#39; or &#39;hexagonal&#39;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span> <span class="o">=</span> <span class="n">size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">presentation</span> <span class="o">=</span> <span class="n">presentation</span>
@@ -146,21 +153,49 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">normalization</span> <span class="o">=</span> <span class="n">normalization</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">presentation</span> <span class="o">=</span> <span class="n">presentation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weights_init</span> <span class="o">=</span> <span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="o">=</span> <span class="n">topology</span>
 
         <span class="c1"># Initialize weights</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="c1"># Create index matrix</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
-            <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
-                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span><span class="p">)</span>
+        <span class="c1"># Create neuron position matrix used for neighbourhood calculations.</span>
+        <span class="c1"># For rectangular topology each neuron sits at integer grid coordinates [y, x].</span>
+        <span class="c1"># For hexagonal topology every other row is offset by 0.5 in x and all rows</span>
+        <span class="c1"># are spaced sqrt(3)/2 apart in y, giving a proper hex lattice.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_ids_matrix</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># GRID HELPERS</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__build_ids_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the (map_size, map_size, 2) array of neuron 2-D positions.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="o">==</span> <span class="s1">&#39;rectangular&#39;</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
+                    <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)])</span>
+                <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>          <span class="c1"># shape (size, size, 2)</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># hexagonal</span>
+            <span class="c1"># Offset-coordinate hex grid.</span>
+            <span class="c1"># Odd rows (0-indexed) are shifted right by 0.5.</span>
+            <span class="c1"># Vertical spacing = sqrt(3)/2 ≈ 0.866 so that</span>
+            <span class="c1"># all six nearest neighbours are equidistant.</span>
+            <span class="n">sqrt3_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">x_offset</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">):</span>
+                    <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">y</span> <span class="o">*</span> <span class="n">sqrt3_2</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x_offset</span><span class="p">])</span>
+                <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>          <span class="c1"># shape (size, size, 2)</span>
 
 <div class="viewcode-block" id="Map.train">
 <a class="viewcode-back" href="../../api.html#GEMA.map.Map.train">[docs]</a>
@@ -214,8 +249,8 @@
 <span class="sd">        :param training_data: numpy array of 2 dimensions. First dimension corresponds to data samples, while the second</span>
 <span class="sd">        represents an specific sample&#39;s data</span>
 <span class="sd">        :param reinforcement: Number of reinforcement iterations</span>
-<span class="sd">        :param extension: WIP</span>
-<span class="sd">        :param compression: WIP</span>
+<span class="sd">        :param extension: Multiplier applied to the current period each reinforcement round (&gt;1 extends training).</span>
+<span class="sd">        :param compression: Multiplier applied to the learning rate each reinforcement round (&lt;1 shrinks it).</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">origin_initial_lr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span>
@@ -225,7 +260,8 @@
             <span class="c1"># Increasing period and compress learning rate(initial)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">*</span> <span class="n">extension</span><span class="p">)</span>
             <span class="n">reinforcement_lr</span> <span class="o">=</span> <span class="n">origin_initial_lr</span> <span class="o">*</span> <span class="n">compression</span>
-            <span class="n">origin_initial_lr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span>
+            <span class="n">origin_initial_lr</span> <span class="o">=</span> <span class="n">reinforcement_lr</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span> <span class="o">=</span> <span class="n">reinforcement_lr</span>
 
             <span class="c1"># Training again</span>
             <span class="k">for</span> <span class="n">numPresentation</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
@@ -361,8 +397,6 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vector1</span> <span class="o">-</span> <span class="n">vector2</span><span class="p">))</span></div>
 
 
-    <span class="c1"># def __adjust_weight(self, ):</span>
-
     <span class="c1"># Function to update weights</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">__adjust_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">bmu</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Function that adjust our map&#39;s weigths considering v, eta, bmu and pattern</span>
@@ -373,7 +407,10 @@
 <span class="sd">        :param pattern: current iteration pattern that we are checking</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">distances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span><span class="p">,</span> <span class="n">bmu</span><span class="p">)</span>
+        <span class="c1"># For hexagonal topology the bmu index must be converted to its</span>
+        <span class="c1"># actual 2-D position in the hex lattice before computing distances.</span>
+        <span class="n">bmu_pos_2d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span><span class="p">[</span><span class="n">bmu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bmu</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ids_matrix</span><span class="p">,</span> <span class="n">bmu_pos_2d</span><span class="p">)</span>
         <span class="n">to_update</span> <span class="o">=</span> <span class="n">distances</span> <span class="o">&lt;=</span> <span class="n">v</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_decay</span><span class="p">:</span>
@@ -394,13 +431,13 @@
 <span class="sd">            - &#39;none&#39;: Perform no normalization to data</span>
 <span class="sd">            - &#39;fwn&#39;: Normalizes each feature independently</span>
 <span class="sd">            - &#39;01scale&#39;: Scales data to 0-1 interval so it set data closer to weights</span>
-<span class="sd">            - &#39;euclidean&#39;: Euclidean Normalization</span>
+<span class="sd">            - &#39;euclidean&#39;: Euclidean (L2) normalization — each sample vector is divided</span>
+<span class="sd">              by its L2 norm so that all samples lie on the unit hypersphere.</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">method</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;fwn&#39;</span><span class="p">:</span>
                 <span class="c1"># Feature Wise Normalization</span>
-
                 <span class="n">training_data_temp</span> <span class="o">=</span> <span class="n">data</span>
                 <span class="n">mean</span> <span class="o">=</span> <span class="n">training_data_temp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">training_data_temp</span> <span class="o">=</span> <span class="n">training_data_temp</span> <span class="o">-</span> <span class="n">mean</span>
@@ -409,18 +446,12 @@
                 <span class="n">data</span> <span class="o">=</span> <span class="n">training_data_temp</span>
 
             <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;euclidean&#39;</span><span class="p">:</span>
-                <span class="c1"># Euclidean Normalization</span>
-                <span class="n">training_data_temp</span> <span class="o">=</span> <span class="n">data</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">training_data_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_data_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-                    <span class="n">temp</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_data_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-                        <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">+</span> <span class="n">training_data_temp</span><span class="p">[</span><span class="n">vector</span><span class="p">,</span> <span class="n">component</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
-                    <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+                <span class="c1"># Vectorised L2 normalisation: divide every row by its own norm.</span>
+                <span class="c1"># Rows with zero norm are left as-is to avoid division by zero.</span>
+                <span class="n">norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">norms</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">norms</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">/</span> <span class="n">norms</span>
 
-                    <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_data_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-                        <span class="n">data</span><span class="p">[</span><span class="n">vector</span><span class="p">,</span> <span class="n">component</span><span class="p">]</span> <span class="o">=</span> <span class="n">training_data_temp</span><span class="p">[</span><span class="n">vector</span><span class="p">,</span> <span class="n">component</span><span class="p">]</span> \
-                                                  <span class="o">/</span> <span class="n">temp</span>
             <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;01scale&#39;</span><span class="p">:</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">data</span>
@@ -433,6 +464,7 @@
 <span class="sd">            - &#39;random&#39;: From 0 to 1</span>
 <span class="sd">            - &#39;random_negative&#39;: From -1 to 1</span>
 <span class="sd">            - &#39;sample&#39;: Takes samples from data. This is useful if data is not normalized</span>
+<span class="sd">            - &#39;PCA&#39;: sequence of vectors taken along a hyperplane spanned by the two largest principal components of the dataset.</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
@@ -449,20 +481,13 @@
 
         <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;sample&#39;</span><span class="p">:</span>
             <span class="c1"># Getting the weights from the input data (training data)</span>
-            <span class="n">total_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="n">weights_list</span> <span class="o">=</span> <span class="p">[]</span>
-
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_weights</span><span class="p">):</span>
-                <span class="n">weights_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="n">data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">)][</span>
-                        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">)])</span>
-
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights_list</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span>
-                                                   <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">))</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">,</span>
+                                    <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>   <span class="c1"># shape (size, size, input_data_dimension)</span>
 
         <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;PCA&#39;</span><span class="p">:</span>
-            <span class="n">scaler</span><span class="o">=</span><span class="n">StandardScaler</span><span class="p">()</span>
-            <span class="n">standardized_data</span><span class="o">=</span><span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+            <span class="n">standardized_data</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="n">pca_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data_dimension</span><span class="p">))</span>
             <span class="n">pc_length</span><span class="p">,</span> <span class="n">pc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">standardized_data</span><span class="p">)))</span>
             <span class="n">pc_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">pc_length</span><span class="p">)</span>
@@ -496,6 +521,7 @@
                 <span class="n">num_data</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;num_data&#39;</span><span class="p">]</span>
                 <span class="n">period</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;period&#39;</span><span class="p">]</span>
                 <span class="n">neighbourhood</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;neighbourhood&#39;</span><span class="p">]</span>
+                <span class="n">topology</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;topology&#39;</span><span class="p">,</span> <span class="s1">&#39;rectangular&#39;</span><span class="p">)</span>   <span class="c1"># backwards-compatible</span>
                 <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">])</span>
 
         <span class="n">new_map</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -504,7 +530,8 @@
                       <span class="n">initial_lr</span><span class="o">=</span><span class="n">initial_lr</span><span class="p">,</span>
                       <span class="n">initial_neighbourhood</span><span class="o">=</span><span class="n">neighbourhood</span><span class="p">,</span>
                       <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
-                      <span class="n">use_decay</span><span class="o">=</span><span class="n">use_decay</span>
+                      <span class="n">use_decay</span><span class="o">=</span><span class="n">use_decay</span><span class="p">,</span>
+                      <span class="n">topology</span><span class="o">=</span><span class="n">topology</span><span class="p">,</span>
                       <span class="p">)</span>
 
         <span class="n">new_map</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
@@ -525,8 +552,6 @@
         <span class="c1"># Creating the JSON object</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="p">[]}</span>
 
-        <span class="c1"># Setting array</span>
-
         <span class="c1"># Appending the model</span>
         <span class="n">data</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
             <span class="s1">&#39;map_size&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_size</span><span class="p">,</span>
@@ -538,6 +563,7 @@
             <span class="s1">&#39;num_data&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_data</span><span class="p">,</span>
             <span class="s1">&#39;period&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">,</span>
             <span class="s1">&#39;neighbourhood&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbourhood</span><span class="p">,</span>
+            <span class="s1">&#39;topology&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology</span><span class="p">,</span>
             <span class="s1">&#39;weights&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="p">})</span>
 

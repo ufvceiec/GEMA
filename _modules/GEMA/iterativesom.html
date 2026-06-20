@@ -74,31 +74,133 @@
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.map</span><span class="w"> </span><span class="kn">import</span> <span class="n">Map</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">Classification</span>
 
 
 <div class="viewcode-block" id="IterativeSOM">
 <a class="viewcode-back" href="../../api.html#GEMA.iterativesom.IterativeSOM">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">IterativeSOM</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trains multiple SOMs of different sizes and optionally selects the best one.</span>
+
+<span class="sd">    This is useful when the optimal map size is not known in advance.</span>
+<span class="sd">    A range of sizes is explored and each resulting map is evaluated using the</span>
+<span class="sd">    quantization error so the user can pick — or automatically obtain — the</span>
+<span class="sd">    best-performing map.</span>
+
+<span class="sd">    Usage example::</span>
+
+<span class="sd">        isom = IterativeSOM(</span>
+<span class="sd">            data=my_data,</span>
+<span class="sd">            period=1000,</span>
+<span class="sd">            initial_lr=0.1,</span>
+<span class="sd">            range_from=np.array([5, 15]),   # try sizes 5 → 15</span>
+<span class="sd">            try_best=True,</span>
+<span class="sd">        )</span>
+<span class="sd">        best = isom.get_best_map()</span>
+<span class="sd">        print(isom.scores)   # {size: quantization_error, ...}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">data</span><span class="p">,</span>
                  <span class="n">period</span><span class="p">,</span>
                  <span class="n">initial_lr</span><span class="p">,</span>
                  <span class="n">range_from</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
                  <span class="n">try_best</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">give_best</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-
+                 <span class="n">give_best</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">map_kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param data: numpy array (N × D) — training data.</span>
+<span class="sd">        :param period: Number of training iterations for each map.</span>
+<span class="sd">        :param initial_lr: Initial learning rate for each map.</span>
+<span class="sd">        :param range_from: 2-element array [min_size, max_size].</span>
+<span class="sd">            When left as the default [0, 0] a sensible range is derived</span>
+<span class="sd">            automatically from the size of the dataset.</span>
+<span class="sd">        :param try_best: If True, classify the training data with every trained</span>
+<span class="sd">            map and record the quantization error.  The map with the lowest</span>
+<span class="sd">            error is stored as ``best_map``.</span>
+<span class="sd">        :param give_best: Alias for ``try_best`` (kept for backwards</span>
+<span class="sd">            compatibility).</span>
+<span class="sd">        :param map_kwargs: Any extra keyword arguments are forwarded to every</span>
+<span class="sd">            :class:`Map` constructor call (e.g. ``topology``, ``distance``,</span>
+<span class="sd">            ``normalization``).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maps</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">range_from</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])):</span>
-            <span class="n">range_from</span> <span class="o">=</span> <span class="n">IterativeSOM</span><span class="o">.</span><span class="n">calculate_range</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">range_from</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_map</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">evaluate</span> <span class="o">=</span> <span class="n">try_best</span> <span class="ow">or</span> <span class="n">give_best</span>
 
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">range_from</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span> <span class="n">initial_lr</span><span class="o">=</span><span class="n">initial_lr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">range_from</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])):</span>
+            <span class="n">range_from</span> <span class="o">=</span> <span class="n">IterativeSOM</span><span class="o">.</span><span class="n">calculate_range</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">min_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">range_from</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">max_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">range_from</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">min_size</span><span class="p">,</span> <span class="n">max_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Training SOM size </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">×</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2"> ===&quot;</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
+                    <span class="n">initial_lr</span><span class="o">=</span><span class="n">initial_lr</span><span class="p">,</span> <span class="o">**</span><span class="n">map_kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">[</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+
+            <span class="k">if</span> <span class="n">evaluate</span><span class="p">:</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="n">Classification</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">quantization_error</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Quantization error: </span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">quantization_error</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">evaluate</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">:</span>
+            <span class="n">best_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">[</span><span class="n">best_size</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Best map: size </span><span class="si">{</span><span class="n">best_size</span><span class="si">}</span><span class="s2">×</span><span class="si">{</span><span class="n">best_size</span><span class="si">}</span><span class="s2"> &quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot;(quantization error </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">best_size</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># PUBLIC HELPERS</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="IterativeSOM.get_best_map">
+<a class="viewcode-back" href="../../api.html#GEMA.iterativesom.IterativeSOM.get_best_map">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_best_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the :class:`Map` with the lowest quantization error.</span>
+
+<span class="sd">        :return: Best :class:`Map` instance, or ``None`` if ``try_best``</span>
+<span class="sd">                 was not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_map</span></div>
+
+
+<div class="viewcode-block" id="IterativeSOM.get_scores">
+<a class="viewcode-back" href="../../api.html#GEMA.iterativesom.IterativeSOM.get_scores">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict mapping each map size to its quantization error.</span>
+
+<span class="sd">        :return: ``{size: quantization_error}`` — empty if ``try_best`` was</span>
+<span class="sd">                 not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span></div>
+
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># STATIC HELPERS</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
 
 <div class="viewcode-block" id="IterativeSOM.calculate_range">
 <a class="viewcode-back" href="../../api.html#GEMA.iterativesom.IterativeSOM.calculate_range">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_range</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">range_from</span><span class="p">):</span>
-        <span class="k">pass</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_range</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Derive a sensible [min_size, max_size] range from the dataset.</span>
+
+<span class="sd">        The heuristic is based on a common rule of thumb for SOM sizing:</span>
+<span class="sd">        the map should have roughly ``5 * sqrt(N)`` neurons in total,</span>
+<span class="sd">        meaning a side length of about ``sqrt(5 * sqrt(N))``.  We explore</span>
+<span class="sd">        ±2 sizes around that centre point, with a minimum side length of 2.</span>
+
+<span class="sd">        :param data: numpy array (N × D).</span>
+<span class="sd">        :return: numpy array ``[min_size, max_size]``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">centre</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">))))</span>
+        <span class="n">min_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">centre</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">max_size</span> <span class="o">=</span> <span class="n">centre</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">min_size</span><span class="p">,</span> <span class="n">max_size</span><span class="p">])</span></div>
 </div>
 
 </pre></div>
