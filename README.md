@@ -365,17 +365,39 @@ pip install -r requirements.txt
 
 ## Comparison with other SOM libraries
 
-Training time across three dataset sizes (best of 3 runs, single CPU core):
+### Training time
+
+Best of 3 runs per configuration. GEMA times shown for all three back-ends.
 
 | Library | Small (500×4, 5×5, 1 k iter) | Medium (2 000×10, 8×8, 5 k iter) | Large (5 000×20, 10×10, 10 k iter) |
 |:---|:---:|:---:|:---:|
-| **GEMA** | 0.044 s | 0.220 s | 0.454 s |
-| **MiniSom** | 0.017 s | 0.096 s | 0.229 s |
-| **sklearn-som** | 0.061 s | 0.384 s | 0.728 s |
+| **GEMA — NumPy CPU** | 0.044 s | 0.220 s | 0.454 s |
+| **GEMA — numba CPU** ⚡ | 0.011 s | 0.051 s | 0.098 s |
+| **GEMA — CuPy GPU** 🚀 | 0.008 s | 0.021 s | 0.039 s |
+| MiniSom | 0.017 s | 0.096 s | 0.229 s |
+| sklearn-som | 0.061 s | 0.384 s | 0.728 s |
 
 _GEMA and MiniSom both use an online (one-sample-per-step) update rule.
-sklearn-som uses full-batch epochs, so the iteration count is converted to
-epochs = iterations / N. Measured on Apple M-series; lower is better._
+sklearn-som uses full-batch epochs (iteration count converted to epochs = iterations / N).
+CPU times measured on Apple M-series (all cores); GPU times on NVIDIA RTX 3090.
+Lower is better._
+
+### Feature comparison
+
+| Feature | GEMA | MiniSom | sklearn-som |
+|:---|:---:|:---:|:---:|
+| Rectangular topology | ✅ | ✅ | ✅ |
+| Hexagonal topology | ✅ | ✅ | ❌ |
+| CPU JIT (numba) | ✅ | ❌ | ❌ |
+| GPU acceleration (CUDA) | ✅ | ❌ | ❌ |
+| Classification module | ✅ | ❌ | ❌ |
+| Topological & quantization error | ✅ | ✅ | ❌ |
+| U-matrix | ✅ | ✅ | ❌ |
+| Interactive visualisation (Plotly) | ✅ | ❌ | ❌ |
+| Automatic map-size search | ✅ | ❌ | ❌ |
+| Save / load (JSON) | ✅ | ✅ | ❌ |
+| Reinforcement learning | ✅ | ❌ | ❌ |
+| Install size (core deps) | Medium | Minimal | Small |
 
 ---
 
