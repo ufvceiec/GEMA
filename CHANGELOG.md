@@ -5,6 +5,41 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5.2] — 2026-06-21
+
+### Added
+
+- **`GEMA/accelerator.py`** — new module that centralises all hardware-acceleration logic.  Safe to import on any machine: missing packages degrade gracefully to plain NumPy.
+  - `CUPY_AVAILABLE` / `NUMBA_AVAILABLE` — runtime availability flags.
+  - `get_array_module(arr)` — returns `numpy` or `cupy` based on where *arr* lives (mirrors `cupy.get_array_module` but safe without CuPy installed).
+  - `to_device(arr, device)` — move a numpy array to `'cpu'` (returns numpy float64) or `'gpu'` (returns cupy float64 on the default CUDA device).
+  - `to_numpy(arr)` — always returns a plain numpy array, copying from GPU if needed.
+  - `device_info()` — prints a summary of available acceleration.
+  - Numba JIT kernels (only compiled when numba is installed):
+    - `_bmu_distances_numba` — parallel squared-distance from every neuron to the current pattern.
+    - `_euclidean_grid_distances_numba` — parallel Euclidean distance on the neuron grid from every neuron to the BMU.
+    - `_chebyshev_grid_distances_numba` — same for Chebyshev distance.
+    - `_weight_update_numba` — parallel in-place weight update with optional Gaussian decay.
+
+- **`device='cpu'` / `device='gpu'` parameter on `Map`** — selects the compute device for the training loop.
+  - `'cpu'` (default): NumPy as before; if numba is installed the four inner kernels are replaced by JIT-compiled, multi-core parallel versions automatically — no code change required.
+  - `'gpu'`: requires CuPy and a CUDA GPU.  Weights, training data, and the grid position matrix are transferred to the GPU once; all inner-loop operations run as native CUDA kernels.  Weights are copied back to CPU after training so that `Classification`, `save_classifier`, and `Visualization` work unchanged.
+
+- **`device_info()`** exported from `GEMA` package root — quick diagnostic for available acceleration.
+
+- **`setup.py` extras** — `pip install "GEMA[cpu]"` installs numba; `pip install "GEMA[gpu]"` installs cupy-cuda12x.
+
+### Changed
+
+- `Map.vector_distance`, `Map.chebyshev_distance`, and `Map.decay` now use `get_array_module` internally, making them device-agnostic (work with both numpy and cupy arrays).
+- `Map.save_classifier` calls `to_numpy()` before serialising, so it works correctly even if weights were left on the GPU by accident.
+- `Map.__build_ids_matrix` rewritten with `np.meshgrid` for the rectangular case (fewer lines, same result).
+- `Map.__normalize` (`'fwn'` branch) now guards against zero-std features to avoid NaN in constant columns.
+- `Map.__normalize` (`'01scale'` branch) guards against zero range (constant data).
+- `Map.__init_weights` (`'PCA'` branch) takes `.real` of the eigenvectors to discard negligible imaginary parts from `np.linalg.eig`.
+
+---
+
 ## [0.5.1] — 2026-06-21
 
 ### Added

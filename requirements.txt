@@ -1,3 +1,4 @@
+# Core (always required)
 numpy>=1.21
 tqdm>=4.60
 pandas>=1.3
@@ -5,3 +6,13 @@ matplotlib>=3.4
 plotly>=5.0
 scikit-learn>=1.0
 scipy>=1.7
+
+# Optional — CPU acceleration (JIT + multi-core parallelism)
+# pip install numba
+# numba>=0.56
+
+# Optional — GPU acceleration (CUDA)
+# Install the wheel that matches your CUDA version:
+#   pip install cupy-cuda12x   # CUDA 12.x
+#   pip install cupy-cuda11x   # CUDA 11.x
+# See https://docs.cupy.dev/en/stable/install.html

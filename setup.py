@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="GEMA",
-    version="0.5.1",
+    version="0.5.2",
     author="Alberto Nogales, Álvaro José García-Tejedor",
     author_email="alberto.nogales@uah.es",
     description="A library to build and study Self-Organizing-Maps",
@@ -25,6 +25,8 @@ setuptools.setup(
     ],
     extras_require={
         'test': ['pytest>=7.0', 'pytest-cov>=4.0'],
+        'cpu': ['numba>=0.56'],
+        'gpu': ['cupy-cuda12x'],   # user should install the matching cuda variant
     },
     classifiers=[
         "Programming Language :: Python :: 3",
